@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>InsightAI - AI Document Intelligence & Data Analytics Platform</title>
-  <meta name="description" content="AI-Powered multi-format document parser, tabular data profiler, resume screening ATS engine, and executive summarization platform.">
+  <title>InsightAI - Smart Document & Data Intelligence Platform</title>
+  <meta name="description" content="AI platform to analyze Excel, PDF, Word, and Resumes with automated insights, ATS scoring, and executive summaries.">
   
   <!-- Modern Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- Chart.js for Interactive Visualizations -->
+  <!-- Chart.js for Data Visualizations -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
-  <!-- Stylesheet -->
+  <!-- Modern Stylesheet -->
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -23,24 +23,37 @@
   <div class="app-container">
     <!-- Navbar Header -->
     <header class="navbar">
-      <div class="brand-section">
+      <div class="brand-section" id="btnBrandHome">
         <div class="logo-badge">IA</div>
-        <div>
+        <div class="brand-text-wrapper">
           <span class="brand-title">InsightAI</span>
-          <span class="brand-badge">Enterprise v1.0</span>
+          <span class="brand-subtitle">Document & Data Intelligence</span>
         </div>
       </div>
 
       <div class="nav-actions">
-        <div class="system-status" id="statusIndicator">
+        <!-- Live System Status -->
+        <div class="status-pill" id="statusIndicator">
           <span class="status-dot"></span> System Ready
         </div>
-        <a href="https://github.com/Prasannaraj2k5/InsightAI" target="_blank" class="btn btn-outline btn-sm">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-          </svg>
-          GitHub Repository
-        </a>
+
+        <!-- Export Report Button -->
+        <button id="btnExportReport" class="btn btn-secondary btn-sm" title="Export or Print Executive Report">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Export Report
+        </button>
+
+        <!-- Light/Dark Mode Switcher -->
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Light/Dark Theme">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </button>
+
+        <!-- User Authentication & Profile Badge -->
+        <div id="userProfileBtn" class="user-profile-badge" title="Account Settings">
+          <div class="user-avatar" id="navUserAvatar">PR</div>
+          <span class="user-name" id="navUserName">Prasanna Raj</span>
+          <span class="user-plan" id="navUserPlan">Pro</span>
+        </div>
       </div>
     </header>
 
@@ -48,11 +61,11 @@
       <!-- Sidebar Navigation -->
       <aside class="sidebar">
         <div>
-          <div class="sidebar-label">Analytics Hub</div>
+          <div class="sidebar-section-title">Core Workspaces</div>
           <ul class="nav-menu">
             <li class="nav-item active" data-tab="tab-upload">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-              File Ingestion
+              Upload & Analyze
             </li>
             <li class="nav-item" data-tab="tab-data">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
@@ -60,33 +73,45 @@
             </li>
             <li class="nav-item" data-tab="tab-resume">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              Resume Screening
+              Resume Screening (ATS)
             </li>
             <li class="nav-item" data-tab="tab-docs">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
-              Document Intelligence
+              Document Intelligence & Q&A
             </li>
-            <li class="nav-item" data-tab="tab-api">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-              REST API Console
+            <li class="nav-item" data-tab="tab-history">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+              Recent Documents
+              <span class="badge-count" id="historyCountBadge">2</span>
             </li>
           </ul>
         </div>
 
-        <!-- Quick 1-Click Sample Demos -->
-        <div class="sample-buttons-box">
-          <div class="sample-title">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            Instant Demo Samples
+        <!-- 1-Click Instant Demo Workflows -->
+        <div class="sample-card-box">
+          <div style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">
+            ⚡ Quick Sample Workflows
           </div>
           <button class="sample-btn" data-sample="financial">
-            <span>📊</span> Q3 Financial Metrics (.csv)
+            <span>📊</span>
+            <div>
+              <div style="font-size: 0.8rem; font-weight: 600;">Financial Metrics</div>
+              <div style="font-size: 0.7rem; color: var(--text-muted);">24 records • CSV</div>
+            </div>
           </button>
           <button class="sample-btn" data-sample="resume">
-            <span>📄</span> Senior AI Engineer (.txt)
+            <span>📄</span>
+            <div>
+              <div style="font-size: 0.8rem; font-weight: 600;">Senior AI Resume</div>
+              <div style="font-size: 0.7rem; color: var(--text-muted);">ATS Score • TXT</div>
+            </div>
           </button>
           <button class="sample-btn" data-sample="strategy_memo">
-            <span>📑</span> Executive AI Memo (.txt)
+            <span>📑</span>
+            <div>
+              <div style="font-size: 0.8rem; font-weight: 600;">AI Strategy Memo</div>
+              <div style="font-size: 0.7rem; color: var(--text-muted);">Executive Q&A • DOC</div>
+            </div>
           </button>
         </div>
       </aside>
@@ -99,7 +124,7 @@
             <div class="kpi-info">
               <span class="kpi-label">Active Document / Source</span>
               <span class="kpi-value" id="kpiFileName" style="font-size: 1.15rem; word-break: break-all;">q3_financial_metrics.csv</span>
-              <span class="kpi-subtext" id="kpiFileSize">1.6 KB</span>
+              <span class="kpi-subtext" id="kpiFileSize">1.6 KB • Clean Ingestion</span>
             </div>
             <div class="kpi-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
@@ -108,9 +133,9 @@
 
           <div class="kpi-card">
             <div class="kpi-info">
-              <span class="kpi-label">Parsing & Extraction Latency</span>
-              <span class="kpi-value" id="kpiLatency">12 ms</span>
-              <span class="kpi-subtext">Real-time Ingestion</span>
+              <span class="kpi-label">Extraction Latency</span>
+              <span class="kpi-value" id="kpiLatency">8 ms</span>
+              <span class="kpi-subtext">Real-time Parsing</span>
             </div>
             <div class="kpi-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -119,8 +144,8 @@
 
           <div class="kpi-card">
             <div class="kpi-info">
-              <span class="kpi-label">Intelligence Score</span>
-              <span class="kpi-value" id="kpiQuality">100%</span>
+              <span class="kpi-label">Analysis Quality Index</span>
+              <span class="kpi-value" id="kpiQuality" style="color: var(--accent-emerald);">100%</span>
               <span class="kpi-subtext">Verified Structure</span>
             </div>
             <div class="kpi-icon">
@@ -130,53 +155,53 @@
 
           <div class="kpi-card">
             <div class="kpi-info">
-              <span class="kpi-label">API Gateway Status</span>
-              <span class="kpi-value" style="color: var(--accent-emerald);">Active</span>
-              <span class="kpi-subtext">REST Endpoints Live</span>
+              <span class="kpi-label">Active Plan</span>
+              <span class="kpi-value" style="color: #818cf8;">Enterprise</span>
+              <span class="kpi-subtext">Unlimited Ingestion</span>
             </div>
             <div class="kpi-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
             </div>
           </div>
         </div>
 
-        <!-- TAB 1: File Ingestion & Parser Hub -->
+        <!-- TAB 1: Smart File Ingestion -->
         <section id="tab-upload" class="tab-pane active">
           <div class="view-header">
             <div class="view-title-group">
-              <h1>Multi-Format Document Ingestion</h1>
-              <p class="view-description">Drop spreadsheets, resumes, reports, and contracts to extract structured data and trigger automated AI models.</p>
+              <h1>Smart Document Ingestion</h1>
+              <p class="view-description">Drop your Excel, PDF, Word, or resume files for instant AI profiling, automated summaries, and interactive dashboards.</p>
             </div>
           </div>
 
-          <div class="upload-card" id="dropZone">
+          <div class="upload-hero-card" id="dropZone">
             <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.pdf,.docx,.doc,.txt,.json">
-            <div class="upload-icon-circle">
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            <div class="upload-icon-ring">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
             </div>
-            <h3 class="upload-title">Drag & Drop Any File Here</h3>
-            <p class="upload-subtitle">or click to browse from your computer</p>
-            <div class="upload-formats">
-              <span class="format-tag">.XLSX</span>
-              <span class="format-tag">.CSV</span>
-              <span class="format-tag">.PDF</span>
-              <span class="format-tag">.DOCX</span>
-              <span class="format-tag">.TXT</span>
-              <span class="format-tag">.JSON</span>
+            <h3 class="upload-hero-title">Drop Files Here to Analyze</h3>
+            <p class="upload-hero-subtitle">Drag any document or spreadsheet, or click anywhere to select from your device</p>
+            <div class="format-pills">
+              <span class="pill-tag">.XLSX</span>
+              <span class="pill-tag">.CSV</span>
+              <span class="pill-tag">.PDF</span>
+              <span class="pill-tag">.DOCX</span>
+              <span class="pill-tag">.TXT</span>
             </div>
           </div>
 
+          <!-- Optional Job Requisition Card for Resumes -->
           <div class="glass-card">
             <div class="card-header">
               <div class="card-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                Optional: Custom Job Requisition for Resume Screening
+                Target Job Description (For Resume Screening & ATS Match)
               </div>
             </div>
-            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
-              When uploading a candidate resume, specify targeted job qualifications below to evaluate ATS fit, missing skill gaps, and weighted match scoring.
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.85rem;">
+              Paste your target job description or required skills to evaluate candidate match percentage, identify missing keywords, and generate custom interview questions.
             </p>
-            <textarea id="customJDInput" class="input-text" rows="3" style="width: 100%; resize: vertical;" placeholder="e.g. Senior Machine Learning Engineer with 5+ years of experience in Python, PyTorch, React, AWS, Docker, Kubernetes, NLP, and RAG architectures..."></textarea>
+            <textarea id="customJDInput" class="input-text" rows="3" style="width: 100%; resize: vertical;" placeholder="e.g. Seeking a Senior Machine Learning Engineer with 5+ years of experience in Python, React, Cloud (AWS/GCP), Docker, Kubernetes, NLP, and REST APIs..."></textarea>
           </div>
         </section>
 
@@ -184,9 +209,13 @@
         <section id="tab-data" class="tab-pane">
           <div class="view-header">
             <div class="view-title-group">
-              <h1>Tabular Data Intelligence & Profiling</h1>
-              <p class="view-description">Automated schema discovery, statistical distribution analysis, and dynamic visualizations.</p>
+              <h1>Tabular Data & Business Intelligence</h1>
+              <p class="view-description">Automated data dictionary, summary metrics, and interactive charts generated from your spreadsheet.</p>
             </div>
+            <button class="btn btn-secondary btn-sm" id="btnExportCsvPreview">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              Export Data CSV
+            </button>
           </div>
 
           <div class="kpi-grid" style="margin-bottom: 1.5rem;">
@@ -216,7 +245,7 @@
             </div>
           </div>
 
-          <!-- Dynamic Charts -->
+          <!-- Dynamic Visualizations -->
           <div class="charts-grid">
             <div class="glass-card">
               <div class="card-header">
@@ -237,10 +266,10 @@
             </div>
           </div>
 
-          <!-- Column Profiles / Data Dictionary -->
+          <!-- Column Profiling Table -->
           <div class="glass-card">
             <div class="card-header">
-              <div class="card-title">Column Profiling & Statistical Summary</div>
+              <div class="card-title">Data Profiling & Statistical Measures</div>
             </div>
             <div class="table-container">
               <table class="data-table">
@@ -258,10 +287,11 @@
             </div>
           </div>
 
-          <!-- Spreadsheet Preview -->
+          <!-- Spreadsheet Preview with Real-time Search -->
           <div class="glass-card">
             <div class="card-header">
-              <div class="card-title">Spreadsheet Records Preview</div>
+              <div class="card-title">Live Spreadsheet Records</div>
+              <input type="text" id="spreadsheetSearchInput" class="input-text" style="padding: 0.35rem 0.85rem; font-size: 0.8rem; width: 220px;" placeholder="Search records...">
             </div>
             <div class="table-container" id="spreadsheetPreview"></div>
           </div>
@@ -271,9 +301,13 @@
         <section id="tab-resume" class="tab-pane">
           <div class="view-header">
             <div class="view-title-group">
-              <h1>AI Resume Screening & ATS Match Engine</h1>
-              <p class="view-description">NLP candidate parsing, multi-tier skill extraction, competency radar, and automated ATS qualification scoring.</p>
+              <h1>Candidate Resume Screening & ATS Match</h1>
+              <p class="view-description">AI candidate parsing, skill taxonomy classification, competency radar, and automated ATS match scoring.</p>
             </div>
+            <button class="btn btn-emerald btn-sm" id="btnExportAtsBrief">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              Print Candidate Brief
+            </button>
           </div>
 
           <!-- Candidate Header & Gauge -->
@@ -289,7 +323,7 @@
               </div>
 
               <div>
-                <h2 id="resCandidateName" style="font-size: 1.6rem; margin-bottom: 0.35rem;">Candidate Name</h2>
+                <h2 id="resCandidateName" style="font-size: 1.65rem; margin-bottom: 0.35rem;">Candidate Name</h2>
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; font-size: 0.85rem; color: var(--text-secondary);">
                   <span id="resCandidateEmail">email@example.com</span> •
                   <span id="resCandidatePhone">+1 (555) 000-0000</span> •
@@ -356,7 +390,7 @@
               <div class="card-header">
                 <div class="card-title">Taxonomy Skills Extracted</div>
               </div>
-              <div id="resSkillsCategorized" style="max-height: 280px; overflow-y: auto;"></div>
+              <div id="resSkillsCategorized" style="max-height: 290px; overflow-y: auto;"></div>
             </div>
           </div>
 
@@ -395,6 +429,15 @@
                 Ask InsightAI About This Document
               </div>
             </div>
+            
+            <!-- Suggested Questions Quick Chips -->
+            <div class="suggestion-chips">
+              <span class="suggestion-chip" data-q="What is the projected cost reduction?">💡 Cost Reduction?</span>
+              <span class="suggestion-chip" data-q="What are the immediate action items?">💡 Immediate Action Items?</span>
+              <span class="suggestion-chip" data-q="What are the critical risks?">💡 Critical Risks?</span>
+              <span class="suggestion-chip" data-q="What is the expected ROI timeline?">💡 Expected ROI?</span>
+            </div>
+
             <div class="qa-box">
               <input type="text" id="qaQuestionInput" class="input-text" placeholder="e.g. What is the projected cost reduction? or What are the immediate action items?">
               <button id="btnAskDoc" class="btn btn-primary">Ask InsightAI</button>
@@ -458,7 +501,7 @@
             <div class="card-header">
               <div class="card-title">Document Tone & Readability Index</div>
             </div>
-            <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+            <div style="display: flex; gap: 2.5rem; flex-wrap: wrap;">
               <div>
                 <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Sentiment & Tone</div>
                 <div id="docSentimentLabel" style="font-size: 1.15rem; font-weight: 700; color: var(--accent-emerald);">-</div>
@@ -471,44 +514,67 @@
           </div>
         </section>
 
-        <!-- TAB 5: REST API Explorer & Console -->
-        <section id="tab-api" class="tab-pane">
+        <!-- TAB 5: Recent Documents History -->
+        <section id="tab-history" class="tab-pane">
           <div class="view-header">
             <div class="view-title-group">
-              <h1>REST API Explorer & Developer Console</h1>
-              <p class="view-description">Directly test InsightAI RESTful endpoints, inspect payloads, and copy production curl snippets.</p>
+              <h1>Recent Documents & Analysis Archive</h1>
+              <p class="view-description">Review previously analyzed spreadsheets, resumes, and reports. 1-click reload and export anytime.</p>
             </div>
           </div>
 
-          <div class="glass-card">
-            <div class="card-header">
-              <div class="card-title">API Request Tester</div>
-              <span id="apiLatencyBadge" class="chip chip-emerald">Ready</span>
-            </div>
-
-            <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
-              <select id="apiEndpointSelect" class="input-text" style="max-width: 320px;">
-                <option value="health">GET /api/health</option>
-                <option value="docs">GET /api/docs</option>
-                <option value="analyzeDoc">POST /api/analyze/document</option>
-                <option value="analyzeData">POST /api/analyze/data</option>
-                <option value="analyzeResume">POST /api/analyze/resume</option>
-                <option value="query">POST /api/query</option>
-              </select>
-              <button id="btnRunApi" class="btn btn-primary">Run Request</button>
-            </div>
-
-            <div style="margin-bottom: 0.5rem; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">JSON Request Body</div>
-            <textarea id="apiRequestBody" class="input-text" rows="4" style="width: 100%; font-family: var(--font-mono); font-size: 0.8rem;"></textarea>
-
-            <div style="margin-top: 1rem; margin-bottom: 0.5rem; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">cURL Command Equivalent</div>
-            <pre id="apiCurlCode" class="code-box"></pre>
-
-            <div style="margin-top: 1rem; margin-bottom: 0.5rem; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Live Server Response</div>
-            <pre id="apiResponseBody" class="code-box" style="max-height: 250px;">Click "Run Request" to test endpoint live...</pre>
+          <div class="history-grid" id="historyGridContainer">
+            <!-- Dynamically populated -->
           </div>
         </section>
       </main>
+    </div>
+  </div>
+
+  <!-- Authentication Modal -->
+  <div id="authModal" class="modal-backdrop">
+    <div class="auth-card">
+      <button class="auth-modal-close" id="btnAuthClose">&times;</button>
+      <div class="auth-header">
+        <h2>Welcome to InsightAI</h2>
+        <p style="font-size: 0.85rem; color: var(--text-secondary);">Enterprise Document & Data Intelligence</p>
+      </div>
+
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tabLoginBtn">Sign In</div>
+        <div class="auth-tab" id="tabRegisterBtn">Create Account</div>
+      </div>
+
+      <!-- Sign In Form -->
+      <form id="loginForm" class="auth-form">
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="loginEmail" class="input-text" value="prasanna@insightai.io" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" class="input-text" value="password123" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Sign In</button>
+        <button type="button" id="btnGuestLogin" class="btn btn-secondary" style="width: 100%;">Continue as Guest / Instant Demo</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="registerForm" class="auth-form" style="display: none;">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="regName" class="input-text" placeholder="e.g. Alex Morgan" required>
+        </div>
+        <div class="form-group">
+          <label>Work Email</label>
+          <input type="email" id="regEmail" class="input-text" placeholder="alex@company.com" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="regPassword" class="input-text" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Create Free Account</button>
+      </form>
     </div>
   </div>
 

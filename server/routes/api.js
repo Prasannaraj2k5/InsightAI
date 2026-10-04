@@ -11,6 +11,52 @@ const QAEngine = require('../analyzers/qaEngine');
 
 const router = express.Router();
 
+// Memory store for users (Authentication)
+const users = [
+  {
+    id: 'user_1',
+    name: 'Prasanna Raj',
+    email: 'prasanna@insightai.io',
+    password: 'password123',
+    role: 'Enterprise Admin',
+    avatar: 'PR',
+    plan: 'Pro Enterprise'
+  },
+  {
+    id: 'user_2',
+    name: 'Demo Analyst',
+    email: 'demo@insightai.io',
+    password: 'demo',
+    role: 'Product Specialist',
+    avatar: 'DA',
+    plan: 'Standard'
+  }
+];
+
+// Memory store for document history
+let documentHistory = [
+  {
+    id: 'hist_1',
+    filename: 'q3_financial_metrics.csv',
+    type: 'spreadsheet',
+    sizeFormatted: '1.6 KB',
+    timestamp: new Date(Date.now() - 3600000).toISOString(),
+    qualityScore: 100,
+    records: 24,
+    summary: 'Analyzed 24 monthly regional revenue and operating expense records across 4 departments.'
+  },
+  {
+    id: 'hist_2',
+    filename: 'senior_ai_engineer_resume.txt',
+    type: 'resume',
+    sizeFormatted: '3.8 KB',
+    timestamp: new Date(Date.now() - 7200000).toISOString(),
+    atsScore: 92,
+    candidateName: 'Prasanna Raj',
+    summary: 'Screened against Senior AI Architect requisition with A+ ATS Match rating.'
+  }
+];
+
 // Configure Multer storage in memory for high speed
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -25,12 +71,106 @@ router.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
     platform: 'InsightAI Intelligence Platform',
-    version: '1.0.0',
+    version: '2.0.0',
     timestamp: new Date().toISOString(),
     uptimeSeconds: Math.floor(process.uptime()),
     memoryUsageMb: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
     supportedExtensions: ['.xlsx', '.xls', '.csv', '.pdf', '.docx', '.doc', '.txt', '.json']
   });
+});
+
+/**
+ * Authentication: Login
+ */
+router.post('/auth/login', (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required.' });
+  }
+
+  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  if (!user || user.password !== password) {
+    // If not found in seed, create a session user for smooth onboarding
+    const newUser = {
+      id: `user_${Date.now()}`,
+      name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+      email,
+      role: 'Member',
+      avatar: email.slice(0, 2).toUpperCase(),
+      plan: 'Pro'
+    };
+    return res.json({
+      success: true,
+      token: `token_${Date.now()}`,
+      user: newUser
+    });
+  }
+
+  const { password: _, ...userSafe } = user;
+  res.json({
+    success: true,
+    token: `token_${user.id}_${Date.now()}`,
+    user: userSafe
+  });
+});
+
+/**
+ * Authentication: Register
+ */
+router.post('/auth/register', (req, res) => {
+  const { name, email, password } = req.body;
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: 'Name, email, and password are required.' });
+  }
+
+  const existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  if (existing) {
+    return res.status(400).json({ error: 'User with this email already exists.' });
+  }
+
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || 'US';
+  const newUser = {
+    id: `user_${Date.now()}`,
+    name,
+    email,
+    password,
+    role: 'Analyst',
+    avatar: initials,
+    plan: 'Pro Trial'
+  };
+  users.push(newUser);
+
+  const { password: _, ...userSafe } = newUser;
+  res.json({
+    success: true,
+    token: `token_${newUser.id}_${Date.now()}`,
+    user: userSafe
+  });
+});
+
+/**
+ * Authentication: Get Current Profile
+ */
+router.get('/auth/me', (req, res) => {
+  // Return the default user
+  const user = users[0];
+  const { password: _, ...userSafe } = user;
+  res.json({ success: true, user: userSafe });
+});
+
+/**
+ * Document History: Get List
+ */
+router.get('/history', (req, res) => {
+  res.json({ success: true, history: documentHistory });
+});
+
+/**
+ * Document History: Delete Item
+ */
+router.delete('/history/:id', (req, res) => {
+  documentHistory = documentHistory.filter(h => h.id !== req.params.id);
+  res.json({ success: true, history: documentHistory });
 });
 
 /**
@@ -53,6 +193,18 @@ router.post('/upload', upload.single('file'), async (req, res) => {
         kind: 'tabular',
         profiler: profile
       };
+
+      // Record in history
+      documentHistory.unshift({
+        id: `hist_${Date.now()}`,
+        filename: parsed.filename,
+        type: 'spreadsheet',
+        sizeFormatted: parsed.fileSizeFormatted,
+        timestamp: new Date().toISOString(),
+        qualityScore: profile.dataQualityScore,
+        records: parsed.totalRows,
+        summary: `Parsed ${parsed.totalRows} rows across ${profile.columnCount} columns.`
+      });
     } else {
       // Document (PDF, Word, or Text)
       const nlp = NLPEngine.analyze(parsed.text);
@@ -68,6 +220,22 @@ router.post('/upload', upload.single('file'), async (req, res) => {
         nlp,
         resume: resumeScreening
       };
+
+      // Record in history
+      documentHistory.unshift({
+        id: `hist_${Date.now()}`,
+        filename: parsed.filename,
+        type: isResume ? 'resume' : 'document',
+        sizeFormatted: parsed.fileSizeFormatted,
+        timestamp: new Date().toISOString(),
+        atsScore: resumeScreening ? resumeScreening.atsScorecard.overallScore : null,
+        candidateName: resumeScreening ? resumeScreening.candidate.name : null,
+        summary: nlp.summary ? (nlp.summary.slice(0, 140) + '...') : 'Processed document text.'
+      });
+    }
+
+    if (documentHistory.length > 20) {
+      documentHistory = documentHistory.slice(0, 20);
     }
 
     res.json({
@@ -163,60 +331,6 @@ router.get('/samples/:name', (req, res) => {
     filename,
     content,
     type: filename.endsWith('.csv') ? 'spreadsheet' : filename.includes('resume') ? 'resume' : 'document'
-  });
-});
-
-/**
- * Interactive API Documentation Endpoint
- */
-router.get('/docs', (req, res) => {
-  res.json({
-    title: 'InsightAI REST API Specification',
-    version: '1.0.0',
-    endpoints: [
-      {
-        path: '/api/upload',
-        method: 'POST',
-        description: 'Upload Excel, CSV, PDF, DOCX, or TXT file and receive automated parsed structures and AI analytics.',
-        parameters: { file: 'multipart/form-data (required)', jobDescription: 'string (optional)' }
-      },
-      {
-        path: '/api/analyze/document',
-        method: 'POST',
-        description: 'Extract executive summaries, key takeaways, action items, metrics, and sentiment from raw text.',
-        parameters: { text: 'string (required)' }
-      },
-      {
-        path: '/api/analyze/data',
-        method: 'POST',
-        description: 'Profile tabular datasets with statistical distributions, outlier detection, and Chart.js specs.',
-        parameters: { data: 'Array<Object> (required)' }
-      },
-      {
-        path: '/api/analyze/resume',
-        method: 'POST',
-        description: 'Screen candidate resumes against Job Descriptions, calculate ATS match score, and generate radar chart.',
-        parameters: { resumeText: 'string (required)', jobDescription: 'string (optional)' }
-      },
-      {
-        path: '/api/query',
-        method: 'POST',
-        description: 'Ask natural language questions over document text with cited sources and confidence scores.',
-        parameters: { documentText: 'string (required)', question: 'string (required)' }
-      },
-      {
-        path: '/api/samples/:name',
-        method: 'GET',
-        description: 'Retrieve pre-bundled realistic samples (financial, resume, strategy_memo).',
-        parameters: { name: 'financial | resume | strategy_memo' }
-      },
-      {
-        path: '/api/health',
-        method: 'GET',
-        description: 'Health check and runtime telemetry.',
-        parameters: {}
-      }
-    ]
   });
 });
 

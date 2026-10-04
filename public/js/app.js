@@ -5,10 +5,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // Application State
   const state = {
     currentTab: 'tab-upload',
+    currentUser: {
+      name: 'Prasanna Raj',
+      email: 'prasanna@insightai.io',
+      role: 'Enterprise Admin',
+      avatar: 'PR',
+      plan: 'Pro'
+    },
     activeFile: null,
     activeParsedData: null,
     activeAnalysis: null,
-    lastDocumentText: ''
+    lastDocumentText: '',
+    history: []
   };
 
   // DOM Elements
@@ -20,21 +28,45 @@ document.addEventListener('DOMContentLoaded', () => {
   const loaderText = document.getElementById('loaderText');
   const statusIndicator = document.getElementById('statusIndicator');
 
+  // Top nav elements
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  const userProfileBtn = document.getElementById('userProfileBtn');
+  const navUserName = document.getElementById('navUserName');
+  const navUserAvatar = document.getElementById('navUserAvatar');
+  const navUserPlan = document.getElementById('navUserPlan');
+  const btnExportReport = document.getElementById('btnExportReport');
+  const btnExportAtsBrief = document.getElementById('btnExportAtsBrief');
+  const btnBrandHome = document.getElementById('btnBrandHome');
+
+  // Auth Modal Elements
+  const authModal = document.getElementById('authModal');
+  const btnAuthClose = document.getElementById('btnAuthClose');
+  const tabLoginBtn = document.getElementById('tabLoginBtn');
+  const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const btnGuestLogin = document.getElementById('btnGuestLogin');
+
   // KPI elements
   const kpiFileName = document.getElementById('kpiFileName');
   const kpiFileSize = document.getElementById('kpiFileSize');
   const kpiLatency = document.getElementById('kpiLatency');
   const kpiQuality = document.getElementById('kpiQuality');
+  const historyCountBadge = document.getElementById('historyCountBadge');
 
-  // Initialize
+  // Initialize all subsystems
   initNavigation();
+  initTheme();
+  initAuth();
   initDragAndDrop();
   initSampleButtons();
   initQAEngine();
-  initApiConsole();
+  initSpreadsheetSearch();
+  initExport();
+  fetchHistory();
   checkHealth();
 
-  // Load sample dataset by default so user is wowed immediately on first view
+  // Load sample dataset by default on startup
   loadSampleWorkflow('financial');
 
   // 1. Navigation & Tab Switching
@@ -45,16 +77,169 @@ document.addEventListener('DOMContentLoaded', () => {
         switchTab(targetTab);
       });
     });
+
+    if (btnBrandHome) {
+      btnBrandHome.addEventListener('click', () => switchTab('tab-upload'));
+    }
   }
 
   function switchTab(tabId) {
     state.currentTab = tabId;
     tabItems.forEach(i => i.classList.toggle('active', i.getAttribute('data-tab') === tabId));
     tabPanes.forEach(p => p.classList.toggle('active', p.id === tabId));
+    if (tabId === 'tab-history') {
+      fetchHistory();
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // 2. Drag & Drop File Upload
+  // 2. Theme Toggle (Dark / Light)
+  function initTheme() {
+    const savedTheme = localStorage.getItem('insightai_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('insightai_theme', next);
+      });
+    }
+  }
+
+  // 3. User Authentication & Profile
+  function initAuth() {
+    // Check saved session
+    const savedUser = localStorage.getItem('insightai_user');
+    if (savedUser) {
+      try {
+        state.currentUser = JSON.parse(savedUser);
+        updateUserUI();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    if (userProfileBtn) {
+      userProfileBtn.addEventListener('click', () => {
+        authModal.classList.add('active');
+      });
+    }
+
+    if (btnAuthClose) {
+      btnAuthClose.addEventListener('click', () => {
+        authModal.classList.remove('active');
+      });
+    }
+
+    authModal.addEventListener('click', (e) => {
+      if (e.target === authModal) authModal.classList.remove('active');
+    });
+
+    if (tabLoginBtn && tabRegisterBtn) {
+      tabLoginBtn.addEventListener('click', () => {
+        tabLoginBtn.classList.add('active');
+        tabRegisterBtn.classList.remove('active');
+        loginForm.style.display = 'flex';
+        registerForm.style.display = 'none';
+      });
+
+      tabRegisterBtn.addEventListener('click', () => {
+        tabRegisterBtn.classList.add('active');
+        tabLoginBtn.classList.remove('active');
+        registerForm.style.display = 'flex';
+        loginForm.style.display = 'none';
+      });
+    }
+
+    // Login Form Submit
+    if (loginForm) {
+      loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        showLoader('Signing in...');
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+          const data = await res.json();
+          if (data.success) {
+            state.currentUser = data.user;
+            localStorage.setItem('insightai_user', JSON.stringify(data.user));
+            updateUserUI();
+            authModal.classList.remove('active');
+          } else {
+            alert(data.error || 'Authentication failed');
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          hideLoader();
+        }
+      });
+    }
+
+    // Register Form Submit
+    if (registerForm) {
+      registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('regName').value;
+        const email = document.getElementById('regEmail').value;
+        const password = document.getElementById('regPassword').value;
+
+        showLoader('Creating account...');
+        try {
+          const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password })
+          });
+          const data = await res.json();
+          if (data.success) {
+            state.currentUser = data.user;
+            localStorage.setItem('insightai_user', JSON.stringify(data.user));
+            updateUserUI();
+            authModal.classList.remove('active');
+          } else {
+            alert(data.error || 'Registration failed');
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          hideLoader();
+        }
+      });
+    }
+
+    // Guest Demo Login
+    if (btnGuestLogin) {
+      btnGuestLogin.addEventListener('click', () => {
+        state.currentUser = {
+          name: 'Demo Analyst',
+          email: 'demo@insightai.io',
+          role: 'Product Specialist',
+          avatar: 'DA',
+          plan: 'Demo Pro'
+        };
+        localStorage.setItem('insightai_user', JSON.stringify(state.currentUser));
+        updateUserUI();
+        authModal.classList.remove('active');
+      });
+    }
+  }
+
+  function updateUserUI() {
+    if (navUserName) navUserName.textContent = state.currentUser.name;
+    if (navUserAvatar) navUserAvatar.textContent = state.currentUser.avatar;
+    if (navUserPlan) navUserPlan.textContent = state.currentUser.plan;
+  }
+
+  // 4. Drag & Drop File Upload
   function initDragAndDrop() {
     if (!dropZone || !fileInput) return;
 
@@ -109,6 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const result = await response.json();
       processAnalysisResult(result);
+      fetchHistory();
     } catch (err) {
       alert(`Error analyzing file: ${err.message}`);
       console.error(err);
@@ -117,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 3. Process & Route Analysis Results
+  // 5. Process & Route Analysis Results
   function processAnalysisResult(result) {
     state.activeFile = result.file;
     state.activeParsedData = result.parsed;
@@ -125,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update Global KPIs
     if (kpiFileName) kpiFileName.textContent = result.file.filename;
-    if (kpiFileSize) kpiFileSize.textContent = result.file.sizeFormatted;
+    if (kpiFileSize) kpiFileSize.textContent = `${result.file.sizeFormatted} • Clean Ingestion`;
     if (kpiLatency) kpiLatency.textContent = `${result.file.processingTimeMs} ms`;
 
     if (result.analysis.kind === 'tabular') {
@@ -150,9 +336,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 4. Render Tabular BI Dashboard
+  // 6. Render Tabular BI Dashboard
   function renderTabularDashboard(parsed, profiler) {
-    // Stats Summary Cards
     const rowEl = document.getElementById('dataTotalRows');
     const colEl = document.getElementById('dataTotalCols');
     const qualEl = document.getElementById('dataQualityScore');
@@ -191,24 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Spreadsheet Preview Table
-    const previewContainer = document.getElementById('spreadsheetPreview');
-    if (previewContainer && parsed.preview && parsed.preview.length > 0) {
-      const headers = Object.keys(parsed.preview[0]);
-      let html = '<table class="data-table"><thead><tr>';
-      headers.forEach(h => html += `<th>${h}</th>`);
-      html += '</tr></thead><tbody>';
-
-      parsed.preview.slice(0, 15).forEach(row => {
-        html += '<tr>';
-        headers.forEach(h => {
-          const val = row[h];
-          html += `<td>${val !== null && val !== undefined ? val : '<span style="color:var(--text-muted)">null</span>'}</td>`;
-        });
-        html += '</tr>';
-      });
-      html += '</tbody></table>';
-      previewContainer.innerHTML = html;
-    }
+    renderSpreadsheetPreview(parsed.preview);
 
     // Render Charts
     if (profiler.charts && profiler.charts.length > 0) {
@@ -220,13 +388,79 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('chart2Title').textContent = profiler.charts[1].title;
         window.ChartManager.render('chartCanvas2', profiler.charts[1]);
       } else if (profiler.charts[0]) {
-        // Fallback duplicate with different format if only 1 chart
         window.ChartManager.render('chartCanvas2', { ...profiler.charts[0], type: 'bar' });
       }
     }
   }
 
-  // 5. Render Resume Screening & ATS Scorecard
+  function renderSpreadsheetPreview(rows, filterQuery = '') {
+    const previewContainer = document.getElementById('spreadsheetPreview');
+    if (!previewContainer || !rows || rows.length === 0) return;
+
+    const headers = Object.keys(rows[0]);
+    let filtered = rows;
+
+    if (filterQuery.trim()) {
+      const q = filterQuery.toLowerCase();
+      filtered = rows.filter(r => Object.values(r).some(val => String(val).toLowerCase().includes(q)));
+    }
+
+    let html = '<table class="data-table"><thead><tr>';
+    headers.forEach(h => html += `<th>${h}</th>`);
+    html += '</tr></thead><tbody>';
+
+    filtered.slice(0, 20).forEach(row => {
+      html += '<tr>';
+      headers.forEach(h => {
+        const val = row[h];
+        html += `<td>${val !== null && val !== undefined ? val : '<span style="color:var(--text-muted)">null</span>'}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+
+    if (filtered.length === 0) {
+      html = '<div style="padding: 2rem; text-align: center; color: var(--text-muted);">No records match your search filter.</div>';
+    }
+
+    previewContainer.innerHTML = html;
+  }
+
+  function initSpreadsheetSearch() {
+    const searchInput = document.getElementById('spreadsheetSearchInput');
+    const exportCsvBtn = document.getElementById('btnExportCsvPreview');
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        if (state.activeParsedData && state.activeParsedData.preview) {
+          renderSpreadsheetPreview(state.activeParsedData.preview, e.target.value);
+        }
+      });
+    }
+
+    if (exportCsvBtn) {
+      exportCsvBtn.addEventListener('click', () => {
+        if (!state.activeParsedData || !state.activeParsedData.data) {
+          alert('No tabular dataset loaded to export.');
+          return;
+        }
+        const data = state.activeParsedData.data;
+        const headers = Object.keys(data[0]);
+        const csvRows = [headers.join(',')];
+        data.forEach(row => {
+          csvRows.push(headers.map(h => JSON.stringify(row[h] || '')).join(','));
+        });
+        const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `exported_${state.activeFile?.filename || 'dataset.csv'}`;
+        a.click();
+      });
+    }
+  }
+
+  // 7. Render Resume Screening & ATS Scorecard
   function renderResumeDashboard(resume) {
     const candidate = resume.candidate;
     const ats = resume.atsScorecard;
@@ -247,7 +481,7 @@ document.addEventListener('DOMContentLoaded', () => {
       scoreCircle.style.setProperty('--score-angle', `${ats.overallScore}%`);
     }
 
-    // Breakdown sub-bars
+    // Breakdown bars
     document.getElementById('subScoreTech').textContent = `${ats.breakdown.technicalSkillMatch}%`;
     document.getElementById('barTech').style.width = `${ats.breakdown.technicalSkillMatch}%`;
 
@@ -294,18 +528,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Strengths & Missing Gaps
     const strengthEl = document.getElementById('resStrengthsList');
     if (strengthEl) {
-      strengthEl.innerHTML = ats.strengths.map(s => `<li style="margin-bottom: 0.35rem; color: var(--accent-emerald);">✔ ${s}</li>`).join('');
+      strengthEl.innerHTML = ats.strengths.map(s => `<li style="margin-bottom: 0.4rem; color: var(--accent-emerald);">✔ ${s}</li>`).join('');
     }
 
     const gapsEl = document.getElementById('resGapsList');
     if (gapsEl) {
       gapsEl.innerHTML = ats.missingSkills.length > 0
-        ? ats.missingSkills.map(s => `<li style="margin-bottom: 0.35rem; color: var(--accent-amber);">⚠ Missing recommended keyword: <strong>${s}</strong></li>`).join('')
-        : '<li style="color: var(--accent-emerald);">✔ All target requisition skills detected!</li>';
+        ? ats.missingSkills.map(s => `<li style="margin-bottom: 0.4rem; color: var(--accent-amber);">⚠ Keyword to incorporate: <strong>${s}</strong></li>`).join('')
+        : '<li style="color: var(--accent-emerald);">✔ 100% of target requisition skills detected!</li>';
     }
   }
 
-  // 6. Render Document Intelligence Dashboard
+  // 8. Render Document Intelligence Dashboard
   function renderDocumentDashboard(nlp, fullText) {
     document.getElementById('docSynopsis').textContent = nlp.summary || 'Summary unavailable.';
 
@@ -327,8 +561,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const metricsContainer = document.getElementById('docMetricsBadges');
     if (metricsContainer) {
       metricsContainer.innerHTML = nlp.metrics.map(m => `
-        <div style="background: var(--bg-surface); padding: 0.65rem 0.9rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
-          <div style="font-size: 1.25rem; font-weight: 800; color: var(--accent-emerald);">${m.value}</div>
+        <div style="background: var(--bg-surface); padding: 0.75rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+          <div style="font-size: 1.3rem; font-weight: 800; color: var(--accent-emerald);">${m.value}</div>
           <div style="font-size: 0.75rem; color: var(--text-secondary);">${m.context || m.type}</div>
         </div>
       `).join('');
@@ -352,7 +586,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('docReadingTime').textContent = `~${nlp.readability.readingTimeMinutes} min read (${nlp.readability.wordCount} words)`;
   }
 
-  // 7. Interactive Document Q&A
+  // 9. Interactive Document Q&A & Suggested Chips
   function initQAEngine() {
     const askBtn = document.getElementById('btnAskDoc');
     const questionInput = document.getElementById('qaQuestionInput');
@@ -360,8 +594,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const qaAnswerText = document.getElementById('qaAnswerText');
     const qaConfidenceBadge = document.getElementById('qaConfidenceBadge');
     const qaCitationsList = document.getElementById('qaCitationsList');
+    const suggestionChips = document.querySelectorAll('.suggestion-chip');
 
     if (!askBtn || !questionInput) return;
+
+    suggestionChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        questionInput.value = chip.getAttribute('data-q');
+        runQA();
+      });
+    });
 
     askBtn.addEventListener('click', runQA);
     questionInput.addEventListener('keydown', (e) => {
@@ -416,7 +658,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 8. Sample Loader Buttons
+  // 10. Document History Tray
+  async function fetchHistory() {
+    try {
+      const res = await fetch('/api/history');
+      if (res.ok) {
+        const data = await res.json();
+        state.history = data.history || [];
+        if (historyCountBadge) historyCountBadge.textContent = state.history.length;
+        renderHistory();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function renderHistory() {
+    const container = document.getElementById('historyGridContainer');
+    if (!container) return;
+
+    if (state.history.length === 0) {
+      container.innerHTML = '<div style="grid-column: 1/-1; padding: 3rem; text-align: center; color: var(--text-muted);">No documents processed yet. Drop any file to begin!</div>';
+      return;
+    }
+
+    container.innerHTML = state.history.map(item => `
+      <div class="history-card">
+        <div class="history-top">
+          <span class="chip ${item.type === 'spreadsheet' ? 'chip-cyan' : item.type === 'resume' ? 'chip-primary' : 'chip-amber'}">${item.type.toUpperCase()}</span>
+          <span style="font-size: 0.72rem; color: var(--text-muted);">${new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+        <div class="history-title">${item.filename}</div>
+        <div class="history-desc">${item.summary || 'Processed file.'}</div>
+        <div class="history-footer">
+          <span style="font-size: 0.75rem; color: var(--accent-emerald); font-weight: 700;">
+            ${item.atsScore ? `${item.atsScore}% ATS Match` : item.qualityScore ? `${item.qualityScore}% Quality` : 'Processed'}
+          </span>
+          <button class="btn btn-secondary btn-sm" onclick="alert('Viewing archived analysis for ${item.filename}')">View</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // 11. Sample Loader Buttons
   function initSampleButtons() {
     const sampleBtns = document.querySelectorAll('.sample-btn');
     sampleBtns.forEach(btn => {
@@ -431,8 +715,6 @@ document.addEventListener('DOMContentLoaded', () => {
     showLoader(`Loading ${sampleKey} dataset sample...`);
     try {
       const sample = await window.SampleManager.fetchSample(sampleKey);
-
-      // Create a Blob from sample text
       const blob = new Blob([sample.content], { type: sample.type === 'spreadsheet' ? 'text/csv' : 'text/plain' });
       const file = new File([blob], sample.filename);
 
@@ -444,112 +726,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 9. Interactive REST API Console
-  function initApiConsole() {
-    const runBtn = document.getElementById('btnRunApi');
-    const endpointSelect = document.getElementById('apiEndpointSelect');
-    const reqBodyTextarea = document.getElementById('apiRequestBody');
-    const respBox = document.getElementById('apiResponseBody');
-    const latencyBadge = document.getElementById('apiLatencyBadge');
-    const curlCodeBox = document.getElementById('apiCurlCode');
-
-    if (!runBtn || !endpointSelect) return;
-
-    const templates = {
-      health: { method: 'GET', url: '/api/health', body: '' },
-      docs: { method: 'GET', url: '/api/docs', body: '' },
-      analyzeDoc: {
-        method: 'POST',
-        url: '/api/analyze/document',
-        body: JSON.stringify({ text: "Nexus Enterprises announced a $14.6M operational cost reduction by FY2028 through deployment of InsightAI." }, null, 2)
-      },
-      analyzeData: {
-        method: 'POST',
-        url: '/api/analyze/data',
-        body: JSON.stringify({
-          data: [
-            { Month: "2026-01", Department: "AI Engineering", Revenue: 1250000 },
-            { Month: "2026-02", Department: "AI Engineering", Revenue: 1380000 },
-            { Month: "2026-03", Department: "AI Engineering", Revenue: 1520000 }
-          ]
-        }, null, 2)
-      },
-      analyzeResume: {
-        method: 'POST',
-        url: '/api/analyze/resume',
-        body: JSON.stringify({
-          resumeText: "PRASANNA RAJ - Senior Full Stack & AI Engineer. Experienced in Python, React, AWS, Docker, Kubernetes, NLP, and REST APIs.",
-          jobDescription: "Looking for a Senior Python and React Engineer with AWS cloud and Docker experience."
-        }, null, 2)
-      },
-      query: {
-        method: 'POST',
-        url: '/api/query',
-        body: JSON.stringify({
-          documentText: "The platform delivers 98.4% accuracy across financial documents and cuts analysis turnaround by 78%.",
-          question: "What is the accuracy rate?"
-        }, null, 2)
-      }
-    };
-
-    endpointSelect.addEventListener('change', () => {
-      const selected = endpointSelect.value;
-      const t = templates[selected];
-      if (t) {
-        reqBodyTextarea.value = t.body;
-        updateCurlPreview(t);
-      }
-    });
-
-    // Initial curl preview
-    updateCurlPreview(templates[endpointSelect.value]);
-
-    function updateCurlPreview(t) {
-      if (!curlCodeBox) return;
-      if (t.method === 'GET') {
-        curlCodeBox.textContent = `curl -X GET http://localhost:3000${t.url}`;
-      } else {
-        curlCodeBox.textContent = `curl -X POST http://localhost:3000${t.url} \\\n  -H "Content-Type: application/json" \\\n  -d '${t.body.replace(/\n/g, '')}'`;
-      }
+  // 12. Export & Print Executive Report
+  function initExport() {
+    if (btnExportReport) {
+      btnExportReport.addEventListener('click', () => {
+        window.print();
+      });
     }
 
-    runBtn.addEventListener('click', async () => {
-      const selected = endpointSelect.value;
-      const t = templates[selected];
-      const startTime = performance.now();
-      runBtn.disabled = true;
-      runBtn.textContent = 'Executing...';
-
-      try {
-        const options = { method: t.method };
-        if (t.method === 'POST') {
-          options.headers = { 'Content-Type': 'application/json' };
-          options.body = reqBodyTextarea.value;
-        }
-
-        const res = await fetch(t.url, options);
-        const data = await res.json();
-        const duration = Math.round(performance.now() - startTime);
-
-        latencyBadge.textContent = `${res.status} OK • ${duration}ms`;
-        respBox.textContent = JSON.stringify(data, null, 2);
-      } catch (err) {
-        respBox.textContent = `Error: ${err.message}`;
-      } finally {
-        runBtn.disabled = false;
-        runBtn.textContent = 'Run Request';
-      }
-    });
+    if (btnExportAtsBrief) {
+      btnExportAtsBrief.addEventListener('click', () => {
+        window.print();
+      });
+    }
   }
 
-  // 10. System Health Poller
+  // 13. System Health Poller
   async function checkHealth() {
     try {
       const res = await fetch('/api/health');
       if (res.ok) {
         const data = await res.json();
         if (statusIndicator) {
-          statusIndicator.innerHTML = `<span class="status-dot"></span> Online (v${data.version})`;
+          statusIndicator.innerHTML = `<span class="status-dot"></span> System Ready (v${data.version})`;
         }
       }
     } catch {
@@ -559,7 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // UI Helper functions
+  // UI Loader helpers
   function showLoader(msg = 'Processing...') {
     if (loaderText) loaderText.textContent = msg;
     if (loaderOverlay) loaderOverlay.classList.add('active');
