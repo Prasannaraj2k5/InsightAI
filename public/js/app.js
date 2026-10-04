@@ -1,6 +1,17 @@
 /**
- * Main Application Logic for InsightAI Dashboard
+ * Main Application Logic for InsightAI Dashboard (v2.5)
+ * Includes all 9 Advanced Add-on Features:
+ * - Feature 1: Multi-Candidate Batch Ranking Leaderboard
+ * - Feature 3: Resume Bullet-Point Optimizer (Google X-Y-Z Formula)
+ * - Feature 5: Natural Language "Ask Your Data" (Text-to-Chart)
+ * - Feature 6: 1-Click Smart Data Cleaning & Hygiene Assistant
+ * - Feature 9: Custom Pivot Table & Multi-Level Aggregator
+ * - Feature 11: Contract Risk & Red-Flag Scanner
+ * - Feature 15: Multi-Language Document Translation Simulator (Dual-Pane)
+ * - Feature 17: Cloud Storage Direct Integrations (Drive / Dropbox / OneDrive)
+ * - Feature 18: Shareable Read-Only Workspace Links
  */
+
 document.addEventListener('DOMContentLoaded', () => {
   // Application State
   const state = {
@@ -38,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnExportAtsBrief = document.getElementById('btnExportAtsBrief');
   const btnBrandHome = document.getElementById('btnBrandHome');
 
-  // Auth Modal Elements
+  // Modals
   const authModal = document.getElementById('authModal');
   const btnAuthClose = document.getElementById('btnAuthClose');
   const tabLoginBtn = document.getElementById('tabLoginBtn');
@@ -47,6 +58,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const registerForm = document.getElementById('registerForm');
   const btnGuestLogin = document.getElementById('btnGuestLogin');
 
+  const leaderboardModal = document.getElementById('leaderboardModal');
+  const btnOpenLeaderboardModal = document.getElementById('btnOpenLeaderboardModal');
+  const btnLeaderboardClose = document.getElementById('btnLeaderboardClose');
+
+  const cloudModal = document.getElementById('cloudModal');
+  const btnCloudStorageModalOpen = document.getElementById('btnCloudStorageModalOpen');
+  const btnCloudModalClose = document.getElementById('btnCloudModalClose');
+
+  const shareModal = document.getElementById('shareModal');
+  const btnShareModalOpen = document.getElementById('btnShareModalOpen');
+  const btnShareModalClose = document.getElementById('btnShareModalClose');
+  const btnCopyShareUrl = document.getElementById('btnCopyShareUrl');
+  const shareUrlInput = document.getElementById('shareUrlInput');
+
   // KPI elements
   const kpiFileName = document.getElementById('kpiFileName');
   const kpiFileSize = document.getElementById('kpiFileSize');
@@ -54,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const kpiQuality = document.getElementById('kpiQuality');
   const historyCountBadge = document.getElementById('historyCountBadge');
 
-  // Initialize all subsystems
+  // Initialize
   initNavigation();
   initTheme();
   initAuth();
@@ -63,10 +88,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initQAEngine();
   initSpreadsheetSearch();
   initExport();
+  initAddonFeatures();
   fetchHistory();
   checkHealth();
 
-  // Load sample dataset by default on startup
+  // Load sample dataset on startup
   loadSampleWorkflow('financial');
 
   // 1. Navigation & Tab Switching
@@ -87,13 +113,11 @@ document.addEventListener('DOMContentLoaded', () => {
     state.currentTab = tabId;
     tabItems.forEach(i => i.classList.toggle('active', i.getAttribute('data-tab') === tabId));
     tabPanes.forEach(p => p.classList.toggle('active', p.id === tabId));
-    if (tabId === 'tab-history') {
-      fetchHistory();
-    }
+    if (tabId === 'tab-history') fetchHistory();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // 2. Theme Toggle (Dark / Light)
+  // 2. Theme Toggle
   function initTheme() {
     const savedTheme = localStorage.getItem('insightai_theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
@@ -108,9 +132,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 3. User Authentication & Profile
+  // 3. User Authentication
   function initAuth() {
-    // Check saved session
     const savedUser = localStorage.getItem('insightai_user');
     if (savedUser) {
       try {
@@ -121,39 +144,26 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    if (userProfileBtn) {
-      userProfileBtn.addEventListener('click', () => {
-        authModal.classList.add('active');
-      });
-    }
-
-    if (btnAuthClose) {
-      btnAuthClose.addEventListener('click', () => {
-        authModal.classList.remove('active');
-      });
-    }
-
-    authModal.addEventListener('click', (e) => {
-      if (e.target === authModal) authModal.classList.remove('active');
-    });
+    if (userProfileBtn) userProfileBtn.addEventListener('click', () => authModal.classList.add('open'));
+    if (btnAuthClose) btnAuthClose.addEventListener('click', () => authModal.classList.remove('open'));
+    authModal.addEventListener('click', (e) => { if (e.target === authModal) authModal.classList.remove('open'); });
 
     if (tabLoginBtn && tabRegisterBtn) {
       tabLoginBtn.addEventListener('click', () => {
         tabLoginBtn.classList.add('active');
         tabRegisterBtn.classList.remove('active');
-        loginForm.style.display = 'flex';
+        loginForm.style.display = 'block';
         registerForm.style.display = 'none';
       });
 
       tabRegisterBtn.addEventListener('click', () => {
         tabRegisterBtn.classList.add('active');
         tabLoginBtn.classList.remove('active');
-        registerForm.style.display = 'flex';
+        registerForm.style.display = 'block';
         loginForm.style.display = 'none';
       });
     }
 
-    // Login Form Submit
     if (loginForm) {
       loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -172,19 +182,18 @@ document.addEventListener('DOMContentLoaded', () => {
             state.currentUser = data.user;
             localStorage.setItem('insightai_user', JSON.stringify(data.user));
             updateUserUI();
-            authModal.classList.remove('active');
-          } else {
-            alert(data.error || 'Authentication failed');
+            authModal.classList.remove('open');
+            showToast('Welcome back, ' + data.user.name + '!', 'success');
           }
         } catch (err) {
           console.error(err);
+          showToast('Sign in failed. Please try again.', 'error');
         } finally {
           hideLoader();
         }
       });
     }
 
-    // Register Form Submit
     if (registerForm) {
       registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -204,33 +213,35 @@ document.addEventListener('DOMContentLoaded', () => {
             state.currentUser = data.user;
             localStorage.setItem('insightai_user', JSON.stringify(data.user));
             updateUserUI();
-            authModal.classList.remove('active');
-          } else {
-            alert(data.error || 'Registration failed');
+            authModal.classList.remove('open');
+            showToast('Account created! Welcome to InsightAI.', 'success');
           }
         } catch (err) {
           console.error(err);
+          showToast('Registration failed. Please try again.', 'error');
         } finally {
           hideLoader();
         }
       });
     }
 
-    // Guest Demo Login
-    if (btnGuestLogin) {
-      btnGuestLogin.addEventListener('click', () => {
-        state.currentUser = {
-          name: 'Demo Analyst',
-          email: 'demo@insightai.io',
-          role: 'Product Specialist',
-          avatar: 'DA',
-          plan: 'Demo Pro'
-        };
-        localStorage.setItem('insightai_user', JSON.stringify(state.currentUser));
-        updateUserUI();
-        authModal.classList.remove('active');
-      });
-    }
+    const guestLoginHandler = () => {
+      state.currentUser = {
+        name: 'Demo Analyst',
+        email: 'demo@insightai.io',
+        role: 'Product Specialist',
+        avatar: 'DA',
+        plan: 'Demo'
+      };
+      localStorage.setItem('insightai_user', JSON.stringify(state.currentUser));
+      updateUserUI();
+      authModal.classList.remove('open');
+      showToast('Signed in as Demo Analyst. Explore freely!', 'info');
+    };
+
+    if (btnGuestLogin) btnGuestLogin.addEventListener('click', guestLoginHandler);
+    const btnGuestLoginReg = document.getElementById('btnGuestLoginReg');
+    if (btnGuestLoginReg) btnGuestLoginReg.addEventListener('click', guestLoginHandler);
   }
 
   function updateUserUI() {
@@ -239,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navUserPlan) navUserPlan.textContent = state.currentUser.plan;
   }
 
-  // 4. Drag & Drop File Upload
+  // 4. File Upload
   function initDragAndDrop() {
     if (!dropZone || !fileInput) return;
 
@@ -254,14 +265,14 @@ document.addEventListener('DOMContentLoaded', () => {
     ['dragenter', 'dragover'].forEach(name => {
       dropZone.addEventListener(name, (e) => {
         e.preventDefault();
-        dropZone.classList.add('dragover');
+        dropZone.classList.add('drag-over');
       });
     });
 
     ['dragleave', 'drop'].forEach(name => {
       dropZone.addEventListener(name, (e) => {
         e.preventDefault();
-        dropZone.classList.remove('dragover');
+        dropZone.classList.remove('drag-over');
       });
     });
 
@@ -296,20 +307,18 @@ document.addEventListener('DOMContentLoaded', () => {
       processAnalysisResult(result);
       fetchHistory();
     } catch (err) {
-      alert(`Error analyzing file: ${err.message}`);
+      showToast(`Error: ${err.message}`, 'error');
       console.error(err);
     } finally {
       hideLoader();
     }
   }
 
-  // 5. Process & Route Analysis Results
   function processAnalysisResult(result) {
     state.activeFile = result.file;
     state.activeParsedData = result.parsed;
     state.activeAnalysis = result.analysis;
 
-    // Update Global KPIs
     if (kpiFileName) kpiFileName.textContent = result.file.filename;
     if (kpiFileSize) kpiFileSize.textContent = `${result.file.sizeFormatted} • Clean Ingestion`;
     if (kpiLatency) kpiLatency.textContent = `${result.file.processingTimeMs} ms`;
@@ -318,6 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const profiler = result.analysis.profiler;
       if (kpiQuality) kpiQuality.textContent = `${profiler.dataQualityScore}%`;
       renderTabularDashboard(result.parsed, profiler);
+      populatePivotDropdowns(result.parsed.columns, profiler.columnProfiles);
       switchTab('tab-data');
     } else if (result.analysis.kind === 'resume') {
       const resume = result.analysis.resume;
@@ -327,7 +337,6 @@ document.addEventListener('DOMContentLoaded', () => {
       renderDocumentDashboard(result.analysis.nlp, result.parsed.text);
       switchTab('tab-resume');
     } else {
-      // Document
       state.lastDocumentText = result.parsed.text;
       const nlp = result.analysis.nlp;
       if (kpiQuality) kpiQuality.textContent = `${nlp.readability.score} Readability`;
@@ -336,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 6. Render Tabular BI Dashboard
+  // 5. Render Tabular Dashboard
   function renderTabularDashboard(parsed, profiler) {
     const rowEl = document.getElementById('dataTotalRows');
     const colEl = document.getElementById('dataTotalCols');
@@ -348,7 +357,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (qualEl) qualEl.textContent = `${profiler.dataQualityScore}%`;
     if (compEl) compEl.textContent = `${profiler.completenessPercent}%`;
 
-    // Data Dictionary Table
     const dictBody = document.getElementById('dataDictionaryBody');
     if (dictBody) {
       dictBody.innerHTML = profiler.columns.map(col => {
@@ -363,22 +371,21 @@ document.addEventListener('DOMContentLoaded', () => {
             statSnippet = `${cp.stats.earliest} to ${cp.stats.latest}`;
           }
         }
+        const typeClass = cp.type === 'number' ? 'badge-cyan' : cp.type === 'date' ? 'badge-warning' : 'badge-info';
         return `
           <tr>
             <td><strong>${col}</strong></td>
-            <td><span class="chip ${cp.type === 'number' ? 'chip-cyan' : cp.type === 'date' ? 'chip-amber' : 'chip-primary'}">${cp.type}</span></td>
+            <td><span class="badge ${typeClass}">${cp.type}</span></td>
             <td>${cp.uniqueCount} (${cp.distinctPercentage}%)</td>
             <td>${cp.nullCount} (${cp.missingPercentage}%)</td>
-            <td style="font-size: 0.8rem; color: var(--text-secondary);">${statSnippet}</td>
+            <td style="font-size: 0.78rem; color: var(--text-secondary);">${statSnippet}</td>
           </tr>
         `;
       }).join('');
     }
 
-    // Spreadsheet Preview Table
     renderSpreadsheetPreview(parsed.preview);
 
-    // Render Charts
     if (profiler.charts && profiler.charts.length > 0) {
       if (profiler.charts[0]) {
         document.getElementById('chart1Title').textContent = profiler.charts[0].title;
@@ -405,8 +412,8 @@ document.addEventListener('DOMContentLoaded', () => {
       filtered = rows.filter(r => Object.values(r).some(val => String(val).toLowerCase().includes(q)));
     }
 
-    let html = '<table class="data-table"><thead><tr>';
-    headers.forEach(h => html += `<th>${h}</th>`);
+    let html = '<table class="table"><thead><tr>';
+    headers.forEach(h => html += `<th scope="col">${h}</th>`);
     html += '</tr></thead><tbody>';
 
     filtered.slice(0, 20).forEach(row => {
@@ -441,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (exportCsvBtn) {
       exportCsvBtn.addEventListener('click', () => {
         if (!state.activeParsedData || !state.activeParsedData.data) {
-          alert('No tabular dataset loaded to export.');
+          showToast('No tabular dataset loaded to export.', 'error');
           return;
         }
         const data = state.activeParsedData.data;
@@ -460,7 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 7. Render Resume Screening & ATS Scorecard
+  // 6. Render Resume Screening
   function renderResumeDashboard(resume) {
     const candidate = resume.candidate;
     const ats = resume.atsScorecard;
@@ -470,54 +477,43 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('resCandidatePhone').textContent = candidate.phone;
     document.getElementById('resCandidateLocation').textContent = candidate.location;
 
-    // ATS Gauge
     const scoreNum = document.getElementById('resAtsScore');
     const scoreGrade = document.getElementById('resAtsGrade');
     const scoreCircle = document.getElementById('atsScoreCircle');
 
     if (scoreNum) scoreNum.textContent = ats.overallScore;
     if (scoreGrade) scoreGrade.textContent = ats.matchGrade;
-    if (scoreCircle) {
-      scoreCircle.style.setProperty('--score-angle', `${ats.overallScore}%`);
-    }
+    if (scoreCircle) scoreCircle.style.setProperty('--pct', `${ats.overallScore}%`);
 
-    // Breakdown bars
     document.getElementById('subScoreTech').textContent = `${ats.breakdown.technicalSkillMatch}%`;
     document.getElementById('barTech').style.width = `${ats.breakdown.technicalSkillMatch}%`;
-
     document.getElementById('subScoreExp').textContent = `${ats.breakdown.experienceAlignment}%`;
     document.getElementById('barExp').style.width = `${ats.breakdown.experienceAlignment}%`;
-
     document.getElementById('subScoreEdu').textContent = `${ats.breakdown.educationScore}%`;
     document.getElementById('barEdu').style.width = `${ats.breakdown.educationScore}%`;
-
     document.getElementById('subScoreDiversity').textContent = `${ats.breakdown.skillDiversity}%`;
     document.getElementById('barDiversity').style.width = `${ats.breakdown.skillDiversity}%`;
 
-    // Radar Chart
-    if (resume.radarChart) {
-      window.ChartManager.render('radarChartCanvas', resume.radarChart);
-    }
+    if (resume.radarChart) window.ChartManager.render('radarChartCanvas', resume.radarChart);
 
-    // Categorized Skills Chips
     const skillContainer = document.getElementById('resSkillsCategorized');
     if (skillContainer) {
       let chipsHtml = '';
       const catBadges = {
-        languages: 'chip-primary',
-        frameworks: 'chip-cyan',
-        cloud_devops: 'chip-emerald',
-        databases: 'chip-purple',
-        ai_ml: 'chip-rose',
-        soft_skills: 'chip-amber'
+        languages: 'badge-info',
+        frameworks: 'badge-cyan',
+        cloud_devops: 'badge-success',
+        databases: 'badge-purple',
+        ai_ml: 'badge-danger',
+        soft_skills: 'badge-warning'
       };
 
       for (const [cat, list] of Object.entries(resume.categorizedSkills)) {
         if (list.length > 0) {
           chipsHtml += `<div style="margin-bottom: 0.75rem;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.35rem;">${cat.replace('_', ' ')}</div>
-            <div class="chip-group">
-              ${list.map(s => `<span class="chip ${catBadges[cat] || 'chip-primary'}">${s}</span>`).join('')}
+            <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:.07em;margin-bottom:.35rem;">${cat.replace('_', ' ')}</div>
+            <div class="chip-row">
+              ${list.map(s => `<span class="chip">${s}</span>`).join('')}
             </div>
           </div>`;
         }
@@ -525,7 +521,6 @@ document.addEventListener('DOMContentLoaded', () => {
       skillContainer.innerHTML = chipsHtml;
     }
 
-    // Strengths & Missing Gaps
     const strengthEl = document.getElementById('resStrengthsList');
     if (strengthEl) {
       strengthEl.innerHTML = ats.strengths.map(s => `<li style="margin-bottom: 0.4rem; color: var(--accent-emerald);">✔ ${s}</li>`).join('');
@@ -539,17 +534,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 8. Render Document Intelligence Dashboard
+  // 7. Render Document Intelligence
   function renderDocumentDashboard(nlp, fullText) {
     document.getElementById('docSynopsis').textContent = nlp.summary || 'Summary unavailable.';
 
-    // Key Takeaways
     const takeawaysList = document.getElementById('docTakeawaysList');
     if (takeawaysList) {
       takeawaysList.innerHTML = nlp.keyTakeaways.map(t => `<li style="margin-bottom: 0.5rem;">${t}</li>`).join('');
     }
 
-    // Action Items
     const actionsList = document.getElementById('docActionItemsList');
     if (actionsList) {
       actionsList.innerHTML = nlp.actionItems.length > 0
@@ -557,7 +550,6 @@ document.addEventListener('DOMContentLoaded', () => {
         : '<li style="color: var(--text-muted)">No explicit urgent action items detected.</li>';
     }
 
-    // Quantitative Metrics Badges
     const metricsContainer = document.getElementById('docMetricsBadges');
     if (metricsContainer) {
       metricsContainer.innerHTML = nlp.metrics.map(m => `
@@ -568,33 +560,31 @@ document.addEventListener('DOMContentLoaded', () => {
       `).join('');
     }
 
-    // NER Chips
     const nerContainer = document.getElementById('docNerChips');
     if (nerContainer) {
       let nerHtml = '';
       const { organizations, technologies, dates, locations } = nlp.entities;
-      if (organizations.length) nerHtml += organizations.map(o => `<span class="chip chip-primary">🏢 ${o}</span>`).join('');
-      if (technologies.length) nerHtml += technologies.map(t => `<span class="chip chip-cyan">⚡ ${t}</span>`).join('');
-      if (dates.length) nerHtml += dates.map(d => `<span class="chip chip-amber">📅 ${d}</span>`).join('');
-      if (locations.length) nerHtml += locations.map(l => `<span class="chip chip-emerald">📍 ${l}</span>`).join('');
-      nerContainer.innerHTML = nerHtml || '<span style="color:var(--text-muted)">No named entities detected.</span>';
+      if (organizations.length) nerHtml += organizations.map(o => `<span class="chip">🏢 ${o}</span>`).join('');
+      if (technologies.length) nerHtml += technologies.map(t => `<span class="chip" style="border-color:rgba(34,211,238,0.2);color:var(--accent-cyan);">⚡ ${t}</span>`).join('');
+      if (dates.length) nerHtml += dates.map(d => `<span class="chip" style="border-color:rgba(245,158,11,0.2);color:var(--accent-amber);">📅 ${d}</span>`).join('');
+      if (locations.length) nerHtml += locations.map(l => `<span class="chip" style="border-color:rgba(16,185,129,0.2);color:var(--accent-emerald);">📍 ${l}</span>`).join('');
+      nerContainer.innerHTML = nerHtml || '<span class="text-muted text-sm">No named entities detected.</span>';
     }
 
-    // Sentiment & Readability
     document.getElementById('docSentimentLabel').textContent = `${nlp.sentiment.label} (${nlp.sentiment.tone})`;
     document.getElementById('docReadabilityScore').textContent = `${nlp.readability.score}/100 - ${nlp.readability.level}`;
     document.getElementById('docReadingTime').textContent = `~${nlp.readability.readingTimeMinutes} min read (${nlp.readability.wordCount} words)`;
+
+    const transSrc = document.getElementById('transSourceText');
+    if (transSrc) transSrc.textContent = fullText ? fullText.slice(0, 350) + '...' : 'Load document to preview translation.';
   }
 
-  // 9. Interactive Document Q&A & Suggested Chips
+  // 8. Q&A Engine
   function initQAEngine() {
     const askBtn = document.getElementById('btnAskDoc');
     const questionInput = document.getElementById('qaQuestionInput');
-    const qaResponseCard = document.getElementById('qaResponseCard');
-    const qaAnswerText = document.getElementById('qaAnswerText');
-    const qaConfidenceBadge = document.getElementById('qaConfidenceBadge');
-    const qaCitationsList = document.getElementById('qaCitationsList');
-    const suggestionChips = document.querySelectorAll('.suggestion-chip');
+    const qaMessages = document.getElementById('qaMessages');
+    const suggestionChips = document.querySelectorAll('.chip[data-q]');
 
     if (!askBtn || !questionInput) return;
 
@@ -610,17 +600,28 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.key === 'Enter') runQA();
     });
 
+    function addBubble(text, type) {
+      if (!qaMessages) return;
+      const bubble = document.createElement('div');
+      bubble.className = `qa-bubble ${type}`;
+      bubble.textContent = text;
+      qaMessages.appendChild(bubble);
+      qaMessages.scrollTop = qaMessages.scrollHeight;
+    }
+
     async function runQA() {
       const q = questionInput.value.trim();
       if (!q) return;
 
       if (!state.lastDocumentText) {
-        alert('Please load or upload a document first before querying.');
+        showToast('Please load a document first before querying.', 'info');
         return;
       }
 
+      addBubble(q, 'user');
+      questionInput.value = '';
       askBtn.disabled = true;
-      askBtn.textContent = 'Searching...';
+      askBtn.textContent = 'Thinking...';
 
       try {
         const res = await fetch('/api/query', {
@@ -635,21 +636,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await res.json();
         if (data.success && data.result) {
           const r = data.result;
-          qaResponseCard.classList.add('active');
-          qaAnswerText.textContent = r.answer;
-          qaConfidenceBadge.textContent = `${r.confidencePercent}% Confidence`;
-
+          addBubble(r.answer, 'ai');
           if (r.citations && r.citations.length > 0) {
-            qaCitationsList.innerHTML = r.citations.map(c => `
-              <div class="citation-box" style="margin-top: 0.5rem;">
-                <strong>Source Excerpt #${c.citationId}:</strong> "${c.excerpt}"
-              </div>
-            `).join('');
-          } else {
-            qaCitationsList.innerHTML = '';
+            addBubble(`Source: "${r.citations[0].excerpt}" (${r.confidencePercent}% confidence)`, 'ai');
           }
+        } else {
+          addBubble('I could not find a specific answer. Try rephrasing your question.', 'ai');
         }
       } catch (err) {
+        addBubble('Connection error. Please try again.', 'ai');
         console.error('Q&A Error:', err);
       } finally {
         askBtn.disabled = false;
@@ -658,7 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 10. Document History Tray
+  // 9. Document History Tray
   async function fetchHistory() {
     try {
       const res = await fetch('/api/history');
@@ -678,29 +673,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!container) return;
 
     if (state.history.length === 0) {
-      container.innerHTML = '<div style="grid-column: 1/-1; padding: 3rem; text-align: center; color: var(--text-muted);">No documents processed yet. Drop any file to begin!</div>';
+      container.innerHTML = '<div style="grid-column:1/-1;padding:3rem;text-align:center;color:var(--text-muted);"><div style="font-size:2.5rem;margin-bottom:0.75rem;">📂</div><div>No documents processed yet. Drop any file to begin!</div></div>';
       return;
     }
 
-    container.innerHTML = state.history.map(item => `
-      <div class="history-card">
-        <div class="history-top">
-          <span class="chip ${item.type === 'spreadsheet' ? 'chip-cyan' : item.type === 'resume' ? 'chip-primary' : 'chip-amber'}">${item.type.toUpperCase()}</span>
-          <span style="font-size: 0.72rem; color: var(--text-muted);">${new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-        </div>
-        <div class="history-title">${item.filename}</div>
-        <div class="history-desc">${item.summary || 'Processed file.'}</div>
-        <div class="history-footer">
-          <span style="font-size: 0.75rem; color: var(--accent-emerald); font-weight: 700;">
-            ${item.atsScore ? `${item.atsScore}% ATS Match` : item.qualityScore ? `${item.qualityScore}% Quality` : 'Processed'}
-          </span>
-          <button class="btn btn-secondary btn-sm" onclick="alert('Viewing archived analysis for ${item.filename}')">View</button>
+    container.innerHTML = state.history.map(item => {
+      const typeClass = item.type === 'spreadsheet' ? 'spreadsheet' : item.type === 'resume' ? 'resume' : 'document';
+      const timeStr = new Date(item.timestamp).toLocaleString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+      const scoreStr = item.atsScore ? `${item.atsScore}% ATS Match` : item.qualityScore ? `${item.qualityScore}% Quality` : 'Processed';
+      return `
+      <div class="history-card" role="listitem">
+        <div class="h-card-type ${typeClass}">${item.type.toUpperCase()}</div>
+        <div class="h-card-name">${item.filename}</div>
+        <div class="h-card-meta">${timeStr}</div>
+        <div class="h-card-summary">${item.summary || 'Document processed successfully.'}</div>
+        <div class="flex" style="justify-content:space-between;align-items:center;">
+          <span class="badge badge-success">${scoreStr}</span>
+          <button class="btn btn-secondary btn-xs" onclick="showToast('Loading archived analysis...', 'info')">View Archive</button>
         </div>
       </div>
-    `).join('');
+    `}).join('');
   }
 
-  // 11. Sample Loader Buttons
+  // 10. Sample Loaders
   function initSampleButtons() {
     const sampleBtns = document.querySelectorAll('.sample-btn');
     sampleBtns.forEach(btn => {
@@ -717,7 +712,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const sample = await window.SampleManager.fetchSample(sampleKey);
       const blob = new Blob([sample.content], { type: sample.type === 'spreadsheet' ? 'text/csv' : 'text/plain' });
       const file = new File([blob], sample.filename);
-
       await handleFileUpload(file);
     } catch (err) {
       console.error(err);
@@ -726,22 +720,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // 12. Export & Print Executive Report
+  // 11. Export & Print
   function initExport() {
-    if (btnExportReport) {
-      btnExportReport.addEventListener('click', () => {
-        window.print();
-      });
-    }
-
-    if (btnExportAtsBrief) {
-      btnExportAtsBrief.addEventListener('click', () => {
-        window.print();
-      });
-    }
+    if (btnExportReport) btnExportReport.addEventListener('click', () => window.print());
+    if (btnExportAtsBrief) btnExportAtsBrief.addEventListener('click', () => window.print());
   }
 
-  // 13. System Health Poller
+  // 12. Check Health
   async function checkHealth() {
     try {
       const res = await fetch('/api/health');
@@ -758,6 +743,461 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // =========================================================================
+  // IMPLEMENTATION OF 9 ADD-ON FEATURES
+  // =========================================================================
+  function initAddonFeatures() {
+    // -----------------------------------------------------------------------
+    // FEATURE 1: Multi-Candidate Batch Ranking Leaderboard
+    // -----------------------------------------------------------------------
+    if (btnOpenLeaderboardModal) {
+      btnOpenLeaderboardModal.addEventListener('click', async () => {
+        leaderboardModal.classList.add('open');
+        showLoader('Evaluating candidate pool for leaderboard...');
+        try {
+          const sampleCandidates = [
+            {
+              name: 'Prasanna Raj',
+              resumeText: state.lastDocumentText && state.activeAnalysis?.kind === 'resume' ? state.lastDocumentText : `
+PRASANNA RAJ - Senior AI & Full Stack Platform Engineer
+Skills: Python, TypeScript, React, PyTorch, Docker, Kubernetes, AWS, PostgreSQL, REST APIs, NLP, RAG.
+Experience: 6+ years designing scalable systems and document intelligence platforms.`
+            },
+            {
+              name: 'Sarah Jenkins',
+              resumeText: `SARAH JENKINS - Senior Data & Cloud Engineer
+Skills: Python, SQL, AWS, Docker, Kubernetes, Spark, Kafka, Microservices.
+Experience: 5 years building big data infrastructure and streaming pipelines.`
+            },
+            {
+              name: 'David Chen',
+              resumeText: `DAVID CHEN - Full-Stack Developer
+Skills: JavaScript, Node.js, Express, HTML, CSS, React, MongoDB.
+Experience: 3 years building web apps and front-end user portals.`
+            }
+          ];
+
+          const res = await fetch('/api/analyze/batch-resumes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              candidates: sampleCandidates,
+              jobDescription: document.getElementById('customJDInput')?.value || ''
+            })
+          });
+
+          const data = await res.json();
+          if (data.success && data.leaderboard) {
+            renderLeaderboardTable(data.leaderboard);
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          hideLoader();
+        }
+      });
+    }
+
+    if (btnLeaderboardClose) {
+      btnLeaderboardClose.addEventListener('click', () => leaderboardModal.classList.remove('open'));
+      leaderboardModal.addEventListener('click', (e) => { if (e.target === leaderboardModal) leaderboardModal.classList.remove('open'); });
+    }
+
+    function renderLeaderboardTable(rows) {
+      const tbody = document.getElementById('leaderboardTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = rows.map(r => `
+        <tr>
+          <td><strong style="color:var(--accent-amber);font-size:1rem;">${r.badge}</strong></td>
+          <td><strong>${r.name}</strong></td>
+          <td>
+            <span class="badge ${r.overallScore >= 85 ? 'badge-success' : r.overallScore >= 75 ? 'badge-info' : 'badge-warning'}">
+              ${r.overallScore}%
+            </span>
+          </td>
+          <td>
+            <span class="badge ${r.statusTier === 'Fast-Track' ? 'badge-success' : 'badge-cyan'}">${r.statusTier}</span>
+          </td>
+          <td>
+            <div class="chip-row">${r.topSkills.map(s => `<span class="chip" style="font-size:0.68rem;">${s}</span>`).join('')}</div>
+          </td>
+          <td>
+            <button class="btn btn-primary btn-xs" onclick="showToast('${r.name} shortlisted for interview!', 'success')">Shortlist</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // -----------------------------------------------------------------------
+    // FEATURE 3: Resume Bullet-Point Optimizer (Google X-Y-Z Formula)
+    // -----------------------------------------------------------------------
+    const btnRunBulletOptimizer = document.getElementById('btnRunBulletOptimizer');
+    const bulletOptimizerResults = document.getElementById('bulletOptimizerResults');
+
+    if (btnRunBulletOptimizer) {
+      btnRunBulletOptimizer.addEventListener('click', async () => {
+        const text = state.lastDocumentText || `
+• Developed automated data ingestion pipelines for large Excel and CSV spreadsheets.
+• Built reusable UI component libraries and responsive web applications.
+• Optimized PostgreSQL query performance and indexed critical tables.`;
+
+        showLoader('Generating Google X-Y-Z formula enhancements...');
+        try {
+          const res = await fetch('/api/analyze/resume-optimizer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ resumeText: text })
+          });
+
+          const data = await res.json();
+          if (data.success && data.optimizations) {
+            bulletOptimizerResults.innerHTML = data.optimizations.map(opt => `
+              <div style="background: var(--bg-surface); padding: 1.15rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-bottom: 0.85rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                  <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Original Bullet #${opt.id}</span>
+                  <span class="chip chip-emerald" style="font-size: 0.72rem;">${opt.scoreBoost}</span>
+                </div>
+                <div style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 0.6rem; text-decoration: line-through;">"${opt.original}"</div>
+                <div style="font-size: 0.75rem; color: var(--accent-amber); margin-bottom: 0.4rem;">⚠ Diagnosis: ${opt.weakness}</div>
+                <div style="background: rgba(16, 185, 129, 0.1); border-left: 3px solid var(--accent-emerald); padding: 0.65rem 0.85rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 0.875rem; color: var(--text-primary);">
+                  <strong>✨ Google X-Y-Z Enhanced Rewrite:</strong><br>${opt.optimizedXYZ}
+                </div>
+              </div>
+            `).join('');
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          hideLoader();
+        }
+      });
+    }
+
+    // -----------------------------------------------------------------------
+    // FEATURE 5: Natural Language "Ask Your Data" (Text-to-Chart)
+    // -----------------------------------------------------------------------
+    const btnRunNlQuery = document.getElementById('btnRunNlQuery');
+    const nlQueryInput = document.getElementById('nlQueryInput');
+    const nlQueryFeedback = document.getElementById('nlQueryFeedback');
+
+    if (btnRunNlQuery && nlQueryInput) {
+      btnRunNlQuery.addEventListener('click', runNlQuery);
+      nlQueryInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') runNlQuery(); });
+
+      async function runNlQuery() {
+        const query = nlQueryInput.value.trim();
+        if (!query) return;
+
+        if (!state.activeParsedData || !state.activeParsedData.data) {
+          alert('Please load a tabular dataset first.');
+          return;
+        }
+
+        btnRunNlQuery.disabled = true;
+        btnRunNlQuery.textContent = 'Generating...';
+
+        try {
+          const res = await fetch('/api/data/nl-query', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query,
+              data: state.activeParsedData.data
+            })
+          });
+
+          const data = await res.json();
+          if (data.success && data.chart) {
+            document.getElementById('chart1Title').textContent = `✨ AI Generated: ${data.chart.title}`;
+            window.ChartManager.render('chartCanvas1', data.chart);
+            if (nlQueryFeedback) {
+              nlQueryFeedback.innerHTML = `<span style="color: var(--accent-emerald);">✔ ${data.summaryText}</span>`;
+            }
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          btnRunNlQuery.disabled = false;
+          btnRunNlQuery.textContent = 'Generate Chart';
+        }
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // FEATURE 6: 1-Click Smart Data Cleaning & Hygiene Assistant
+    // -----------------------------------------------------------------------
+    const btnSmartCleanData = document.getElementById('btnSmartCleanData');
+    if (btnSmartCleanData) {
+      btnSmartCleanData.addEventListener('click', async () => {
+        if (!state.activeParsedData || !state.activeParsedData.data) {
+          showToast('No tabular data loaded. Upload a spreadsheet first.', 'error');
+          return;
+        }
+
+        showLoader('Running smart data hygiene audit and cleanup...');
+        try {
+          const res = await fetch('/api/data/clean', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: state.activeParsedData.data })
+          });
+
+          const result = await res.json();
+          if (result.success) {
+            state.activeParsedData.data = result.cleanedData;
+            state.activeParsedData.preview = result.cleanedData.slice(0, 30);
+            renderSpreadsheetPreview(state.activeParsedData.preview);
+            showToast(`Data cleaned! ${result.hygieneReport.duplicatesRemoved} duplicates removed, ${result.hygieneReport.nullsImputed} nulls imputed.`, 'success');
+          }
+        } catch (err) {
+          console.error(err);
+          showToast('Data cleaning failed.', 'error');
+        } finally {
+          hideLoader();
+        }
+      });
+    }
+
+    // -----------------------------------------------------------------------
+    // FEATURE 9: Custom Pivot Table & Multi-Level Aggregator
+    // -----------------------------------------------------------------------
+    const btnComputePivot = document.getElementById('btnComputePivot');
+    if (btnComputePivot) {
+      btnComputePivot.addEventListener('click', async () => {
+        if (!state.activeParsedData || !state.activeParsedData.data) {
+          showToast('Load a tabular dataset first.', 'error');
+          return;
+        }
+
+        const rowDimension = document.getElementById('pivotDimensionSelect').value;
+        const metricField = document.getElementById('pivotMetricSelect').value;
+        const aggregation = document.getElementById('pivotAggSelect').value;
+
+        showLoader('Computing multi-level pivot aggregation...');
+        try {
+          const res = await fetch('/api/data/pivot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              data: state.activeParsedData.data,
+              rowDimension,
+              metricField,
+              aggregation
+            })
+          });
+
+          const data = await res.json();
+          if (data.success && data.pivotRows) {
+            renderPivotTable(data.pivotRows, rowDimension, metricField, aggregation);
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          hideLoader();
+        }
+      });
+    }
+
+    function renderPivotTable(rows, dim, metric, agg) {
+      const container = document.getElementById('pivotResultsContainer');
+      if (!container || rows.length === 0) return;
+
+      let html = `<table class="table"><thead><tr>
+        <th scope="col">${dim}</th>
+        <th scope="col">Records</th>
+        <th scope="col">Total Sum</th>
+        <th scope="col">Average</th>
+        <th scope="col">${agg.toUpperCase()} (${metric})</th>
+      </tr></thead><tbody>`;
+
+      rows.forEach(r => {
+        html += `<tr>
+          <td><strong>${r[dim]}</strong></td>
+          <td>${r.RecordCount}</td>
+          <td>$${r.TotalSum.toLocaleString()}</td>
+          <td>$${r.Average.toLocaleString()}</td>
+          <td><strong style="color:var(--accent-emerald);">$${r.CalculatedValue.toLocaleString()}</strong></td>
+        </tr>`;
+      });
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
+      showToast(`Pivot table computed: ${rows.length} groups found.`, 'success');
+    }
+
+    // -----------------------------------------------------------------------
+    // FEATURE 11: Contract Risk & Red-Flag Scanner
+    // -----------------------------------------------------------------------
+    const btnScanContractRisks = document.getElementById('btnScanContractRisks');
+    const contractRiskResults = document.getElementById('contractRiskResults');
+
+    if (btnScanContractRisks) {
+      btnScanContractRisks.addEventListener('click', async () => {
+        const text = state.lastDocumentText || `
+Nexus Enterprises Master Services Agreement.
+The vendor shall provide unlimited liability and indemnify and hold harmless the client in its sole discretion.
+This agreement shall automatically renew for a subsequent term unless written notice of non-renewal is given 120 days prior to expiration.
+Early termination fee shall accelerate all remaining payments.`;
+
+        showLoader('Scanning document for high-risk legal clauses...');
+        try {
+          const res = await fetch('/api/analyze/contract-risks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+          });
+
+          const data = await res.json();
+          if (data.success) {
+            contractRiskResults.innerHTML = `
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; background: var(--bg-surface); padding: 0.85rem 1.25rem; border-radius: var(--radius-md);">
+                <div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Overall Document Risk Index</div>
+                  <div style="font-size: 1.4rem; font-weight: 800; color: ${data.riskScore >= 60 ? 'var(--accent-rose)' : 'var(--accent-amber)'};">${data.riskScore}/100 — ${data.riskLevel}</div>
+                </div>
+                <span class="chip chip-rose">${data.detectedCount} Red Flags Detected</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                ${data.risks.map(r => `
+                  <div style="background: var(--bg-surface); padding: 1rem; border-radius: var(--radius-sm); border-left: 3px solid ${r.severity === 'HIGH' ? 'var(--accent-rose)' : 'var(--accent-amber)'};">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.35rem;">
+                      <strong style="color: var(--text-primary); font-size: 0.95rem;">${r.category}</strong>
+                      <span class="chip ${r.severity === 'HIGH' ? 'chip-rose' : 'chip-amber'}" style="font-size: 0.7rem;">${r.severity} SEVERITY</span>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.4rem;">Triggered by: <em>"${r.triggers.join(', ')}"</em></div>
+                    <div style="font-size: 0.825rem; color: var(--accent-emerald);"><strong>Mitigation Recommendation:</strong> ${r.recommendation}</div>
+                  </div>
+                `).join('')}
+              </div>
+            `;
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          hideLoader();
+        }
+      });
+    }
+
+    // -----------------------------------------------------------------------
+    // FEATURE 15: Multi-Language Document Translation Simulator (Dual-Pane)
+    // -----------------------------------------------------------------------
+    const btnRunTranslation = document.getElementById('btnRunTranslation');
+    const translationLangSelect = document.getElementById('translationLangSelect');
+    const transTargetText = document.getElementById('transTargetText');
+
+    if (btnRunTranslation && translationLangSelect) {
+      btnRunTranslation.addEventListener('click', async () => {
+        const text = state.lastDocumentText || 'Executive Overview: The rapid acceleration of generative AI and unstructured data intelligence presents both an immense opportunity and a competitive imperative for Nexus Enterprises.';
+        const targetLanguage = translationLangSelect.value;
+
+        showLoader('Generating dual-pane translation...');
+        try {
+          const res = await fetch('/api/analyze/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, targetLanguage })
+          });
+
+          const data = await res.json();
+          if (data.success && transTargetText) {
+            transTargetText.innerHTML = `
+              <div style="font-size: 0.75rem; color: var(--accent-cyan); font-weight: 700; text-transform: uppercase; margin-bottom: 0.4rem;">${data.targetLanguageName} Translated Preview</div>
+              <div>${data.translatedText}</div>
+            `;
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          hideLoader();
+        }
+      });
+    }
+
+    // -----------------------------------------------------------------------
+    // FEATURE 17: Cloud Storage Direct Integrations (Drive / Dropbox / OneDrive)
+    // -----------------------------------------------------------------------
+    if (btnCloudStorageModalOpen) {
+      btnCloudStorageModalOpen.addEventListener('click', () => cloudModal.classList.add('open'));
+    }
+    if (btnCloudModalClose) {
+      btnCloudModalClose.addEventListener('click', () => cloudModal.classList.remove('open'));
+      cloudModal.addEventListener('click', (e) => { if (e.target === cloudModal) cloudModal.classList.remove('open'); });
+    }
+
+    const cloudProviders = [
+      { id: 'btnPickGoogleDrive', sample: 'financial', provider: 'Google Drive' },
+      { id: 'btnPickDropbox', sample: 'resume', provider: 'Dropbox' },
+      { id: 'btnPickOneDrive', sample: 'strategy_memo', provider: 'Microsoft OneDrive' }
+    ];
+
+    cloudProviders.forEach(cp => {
+      const btn = document.getElementById(cp.id);
+      if (btn) {
+        btn.addEventListener('click', () => {
+          cloudModal.classList.remove('open');
+          showToast(`Importing from ${cp.provider}...`, 'info');
+          showLoader(`Importing dataset from ${cp.provider}...`);
+          setTimeout(() => {
+            loadSampleWorkflow(cp.sample);
+          }, 600);
+        });
+      }
+    });
+
+    // -----------------------------------------------------------------------
+    // FEATURE 18: Shareable Read-Only Workspace Links
+    // -----------------------------------------------------------------------
+    if (btnShareModalOpen) {
+      btnShareModalOpen.addEventListener('click', async () => {
+        shareModal.classList.add('open');
+        try {
+          const res = await fetch('/api/share', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              documentTitle: state.activeFile?.filename || 'Financial & Intelligence Analysis',
+              summary: 'Comprehensive multi-format document analysis and automated visualization suite.'
+            })
+          });
+          const data = await res.json();
+          if (data.success && shareUrlInput) {
+            shareUrlInput.value = data.shareUrl;
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      });
+    }
+
+    if (btnShareModalClose) {
+      btnShareModalClose.addEventListener('click', () => shareModal.classList.remove('open'));
+      shareModal.addEventListener('click', (e) => { if (e.target === shareModal) shareModal.classList.remove('open'); });
+    }
+
+    if (btnCopyShareUrl && shareUrlInput) {
+      btnCopyShareUrl.addEventListener('click', () => {
+        navigator.clipboard.writeText(shareUrlInput.value);
+        btnCopyShareUrl.textContent = 'Copied! ✔';
+        showToast('Share link copied to clipboard!', 'success');
+        setTimeout(() => { btnCopyShareUrl.textContent = 'Copy Link'; }, 2000);
+      });
+    }
+  }
+
+  function populatePivotDropdowns(columns, profiles) {
+    const dimSelect = document.getElementById('pivotDimensionSelect');
+    const metricSelect = document.getElementById('pivotMetricSelect');
+    if (!dimSelect || !metricSelect || !columns) return;
+
+    dimSelect.innerHTML = columns.map(c => `<option value="${c}">${c}</option>`).join('');
+
+    const numCols = columns.filter(c => profiles && profiles[c] && profiles[c].type === 'number');
+    const validMetrics = numCols.length > 0 ? numCols : columns;
+
+    metricSelect.innerHTML = validMetrics.map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+
   // UI Loader helpers
   function showLoader(msg = 'Processing...') {
     if (loaderText) loaderText.textContent = msg;
@@ -767,4 +1207,30 @@ document.addEventListener('DOMContentLoaded', () => {
   function hideLoader() {
     if (loaderOverlay) loaderOverlay.classList.remove('active');
   }
+
+  // Toast Notifications
+  function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    const icons = {
+      success: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+      error: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+      info: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+    };
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `<div class="toast-icon">${icons[type] || icons.info}</div><span>${message}</span>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add('hide');
+      setTimeout(() => toast.remove(), 300);
+    }, 3500);
+  }
+
+  // Expose toast globally for inline onclick handlers
+  window.showToast = showToast;
 });
