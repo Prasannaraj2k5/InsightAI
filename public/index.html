@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InsightAI - AI Document Intelligence & Data Analytics Platform</title>
+  <meta name="description" content="AI-Powered multi-format document parser, tabular data profiler, resume screening ATS engine, and executive summarization platform.">
+  
+  <!-- Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js for Interactive Visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="ambient-glow"></div>
+  
+  <div class="app-container">
+    <!-- Navbar Header -->
+    <header class="navbar">
+      <div class="brand-section">
+        <div class="logo-badge">IA</div>
+        <div>
+          <span class="brand-title">InsightAI</span>
+          <span class="brand-badge">Enterprise v1.0</span>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <div class="system-status" id="statusIndicator">
+          <span class="status-dot"></span> System Ready
+        </div>
+        <a href="https://github.com/Prasannaraj2k5/InsightAI" target="_blank" class="btn btn-outline btn-sm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          GitHub Repository
+        </a>
+      </div>
+    </header>
+
+    <div class="main-layout">
+      <!-- Sidebar Navigation -->
+      <aside class="sidebar">
+        <div>
+          <div class="sidebar-label">Analytics Hub</div>
+          <ul class="nav-menu">
+            <li class="nav-item active" data-tab="tab-upload">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+              File Ingestion
+            </li>
+            <li class="nav-item" data-tab="tab-data">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              Data Analytics & BI
+            </li>
+            <li class="nav-item" data-tab="tab-resume">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Resume Screening
+            </li>
+            <li class="nav-item" data-tab="tab-docs">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+              Document Intelligence
+            </li>
+            <li class="nav-item" data-tab="tab-api">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              REST API Console
+            </li>
+          </ul>
+        </div>
+
+        <!-- Quick 1-Click Sample Demos -->
+        <div class="sample-buttons-box">
+          <div class="sample-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Instant Demo Samples
+          </div>
+          <button class="sample-btn" data-sample="financial">
+            <span>📊</span> Q3 Financial Metrics (.csv)
+          </button>
+          <button class="sample-btn" data-sample="resume">
+            <span>📄</span> Senior AI Engineer (.txt)
+          </button>
+          <button class="sample-btn" data-sample="strategy_memo">
+            <span>📑</span> Executive AI Memo (.txt)
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Content Area -->
+      <main class="content-area">
+        <!-- Global Live KPIs Header Bar -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-info">
+              <span class="kpi-label">Active Document / Source</span>
+              <span class="kpi-value" id="kpiFileName" style="font-size: 1.15rem; word-break: break-all;">q3_financial_metrics.csv</span>
+              <span class="kpi-subtext" id="kpiFileSize">1.6 KB</span>
+            </div>
+            <div class="kpi-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-info">
+              <span class="kpi-label">Parsing & Extraction Latency</span>
+              <span class="kpi-value" id="kpiLatency">12 ms</span>
+              <span class="kpi-subtext">Real-time Ingestion</span>
+            </div>
+            <div class="kpi-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-info">
+              <span class="kpi-label">Intelligence Score</span>
+              <span class="kpi-value" id="kpiQuality">100%</span>
+              <span class="kpi-subtext">Verified Structure</span>
+            </div>
+            <div class="kpi-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-info">
+              <span class="kpi-label">API Gateway Status</span>
+              <span class="kpi-value" style="color: var(--accent-emerald);">Active</span>
+              <span class="kpi-subtext">REST Endpoints Live</span>
+            </div>
+            <div class="kpi-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 1: File Ingestion & Parser Hub -->
+        <section id="tab-upload" class="tab-pane active">
+          <div class="view-header">
+            <div class="view-title-group">
+              <h1>Multi-Format Document Ingestion</h1>
+              <p class="view-description">Drop spreadsheets, resumes, reports, and contracts to extract structured data and trigger automated AI models.</p>
+            </div>
+          </div>
+
+          <div class="upload-card" id="dropZone">
+            <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.pdf,.docx,.doc,.txt,.json">
+            <div class="upload-icon-circle">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+            </div>
+            <h3 class="upload-title">Drag & Drop Any File Here</h3>
+            <p class="upload-subtitle">or click to browse from your computer</p>
+            <div class="upload-formats">
+              <span class="format-tag">.XLSX</span>
+              <span class="format-tag">.CSV</span>
+              <span class="format-tag">.PDF</span>
+              <span class="format-tag">.DOCX</span>
+              <span class="format-tag">.TXT</span>
+              <span class="format-tag">.JSON</span>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                Optional: Custom Job Requisition for Resume Screening
+              </div>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+              When uploading a candidate resume, specify targeted job qualifications below to evaluate ATS fit, missing skill gaps, and weighted match scoring.
+            </p>
+            <textarea id="customJDInput" class="input-text" rows="3" style="width: 100%; resize: vertical;" placeholder="e.g. Senior Machine Learning Engineer with 5+ years of experience in Python, PyTorch, React, AWS, Docker, Kubernetes, NLP, and RAG architectures..."></textarea>
+          </div>
+        </section>
+
+        <!-- TAB 2: Data Analytics & Tabular BI -->
+        <section id="tab-data" class="tab-pane">
+          <div class="view-header">
+            <div class="view-title-group">
+              <h1>Tabular Data Intelligence & Profiling</h1>
+              <p class="view-description">Automated schema discovery, statistical distribution analysis, and dynamic visualizations.</p>
+            </div>
+          </div>
+
+          <div class="kpi-grid" style="margin-bottom: 1.5rem;">
+            <div class="kpi-card">
+              <div class="kpi-info">
+                <span class="kpi-label">Total Rows</span>
+                <span class="kpi-value" id="dataTotalRows">-</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-info">
+                <span class="kpi-label">Total Columns</span>
+                <span class="kpi-value" id="dataTotalCols">-</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-info">
+                <span class="kpi-label">Data Quality Score</span>
+                <span class="kpi-value" id="dataQualityScore">-</span>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-info">
+                <span class="kpi-label">Cell Completeness</span>
+                <span class="kpi-value" id="dataCompleteness">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Charts -->
+          <div class="charts-grid">
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title" id="chart1Title">Metric Progression</div>
+              </div>
+              <div class="chart-wrapper">
+                <canvas id="chartCanvas1"></canvas>
+              </div>
+            </div>
+
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title" id="chart2Title">Distribution Breakdown</div>
+              </div>
+              <div class="chart-wrapper">
+                <canvas id="chartCanvas2"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column Profiles / Data Dictionary -->
+          <div class="glass-card">
+            <div class="card-header">
+              <div class="card-title">Column Profiling & Statistical Summary</div>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Column Name</th>
+                    <th>Inferred Type</th>
+                    <th>Unique Values</th>
+                    <th>Missing / Nulls</th>
+                    <th>Key Statistics / Samples</th>
+                  </tr>
+                </thead>
+                <tbody id="dataDictionaryBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Spreadsheet Preview -->
+          <div class="glass-card">
+            <div class="card-header">
+              <div class="card-title">Spreadsheet Records Preview</div>
+            </div>
+            <div class="table-container" id="spreadsheetPreview"></div>
+          </div>
+        </section>
+
+        <!-- TAB 3: Resume Screening & ATS Ranking -->
+        <section id="tab-resume" class="tab-pane">
+          <div class="view-header">
+            <div class="view-title-group">
+              <h1>AI Resume Screening & ATS Match Engine</h1>
+              <p class="view-description">NLP candidate parsing, multi-tier skill extraction, competency radar, and automated ATS qualification scoring.</p>
+            </div>
+          </div>
+
+          <!-- Candidate Header & Gauge -->
+          <div class="glass-card" style="margin-bottom: 1.5rem;">
+            <div class="ats-container">
+              <div class="ats-gauge-card">
+                <div class="score-circle" id="atsScoreCircle">
+                  <span class="score-number" id="resAtsScore">92</span>
+                  <span class="score-max">/ 100</span>
+                </div>
+                <div class="score-grade" id="resAtsGrade">A+ (Exceptional Fit)</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">Overall ATS Alignment</div>
+              </div>
+
+              <div>
+                <h2 id="resCandidateName" style="font-size: 1.6rem; margin-bottom: 0.35rem;">Candidate Name</h2>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; font-size: 0.85rem; color: var(--text-secondary);">
+                  <span id="resCandidateEmail">email@example.com</span> •
+                  <span id="resCandidatePhone">+1 (555) 000-0000</span> •
+                  <span id="resCandidateLocation">Location</span>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+                  <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.25rem;">
+                      <span>Technical Skill Alignment</span>
+                      <strong id="subScoreTech">90%</strong>
+                    </div>
+                    <div style="background: var(--bg-surface); height: 6px; border-radius: 9999px; overflow: hidden;">
+                      <div id="barTech" style="background: var(--accent-primary); width: 90%; height: 100%;"></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.25rem;">
+                      <span>Experience Depth</span>
+                      <strong id="subScoreExp">95%</strong>
+                    </div>
+                    <div style="background: var(--bg-surface); height: 6px; border-radius: 9999px; overflow: hidden;">
+                      <div id="barExp" style="background: var(--accent-cyan); width: 95%; height: 100%;"></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.25rem;">
+                      <span>Education & Credentials</span>
+                      <strong id="subScoreEdu">98%</strong>
+                    </div>
+                    <div style="background: var(--bg-surface); height: 6px; border-radius: 9999px; overflow: hidden;">
+                      <div id="barEdu" style="background: var(--accent-emerald); width: 98%; height: 100%;"></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.25rem;">
+                      <span>Skill Diversity</span>
+                      <strong id="subScoreDiversity">85%</strong>
+                    </div>
+                    <div style="background: var(--bg-surface); height: 6px; border-radius: 9999px; overflow: hidden;">
+                      <div id="barDiversity" style="background: var(--accent-purple); width: 85%; height: 100%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Radar Chart & Skills Breakdown -->
+          <div class="charts-grid">
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title">Competency Radar vs Senior Benchmark</div>
+              </div>
+              <div class="chart-wrapper">
+                <canvas id="radarChartCanvas"></canvas>
+              </div>
+            </div>
+
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title">Taxonomy Skills Extracted</div>
+              </div>
+              <div id="resSkillsCategorized" style="max-height: 280px; overflow-y: auto;"></div>
+            </div>
+          </div>
+
+          <!-- Strengths vs Missing Gaps -->
+          <div class="charts-grid">
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title">Key Strengths & Differentiators</div>
+              </div>
+              <ul id="resStrengthsList" style="list-style: none; font-size: 0.9rem;"></ul>
+            </div>
+
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title">Requisition Gaps & Recommendations</div>
+              </div>
+              <ul id="resGapsList" style="list-style: none; font-size: 0.9rem;"></ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 4: Document Intelligence & Q&A -->
+        <section id="tab-docs" class="tab-pane">
+          <div class="view-header">
+            <div class="view-title-group">
+              <h1>Document Intelligence & Semantic Q&A</h1>
+              <p class="view-description">Executive summarization, named entity recognition, quantitative insights, and natural language query engine.</p>
+            </div>
+          </div>
+
+          <!-- Interactive Q&A Search Bar -->
+          <div class="glass-card">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Ask InsightAI About This Document
+              </div>
+            </div>
+            <div class="qa-box">
+              <input type="text" id="qaQuestionInput" class="input-text" placeholder="e.g. What is the projected cost reduction? or What are the immediate action items?">
+              <button id="btnAskDoc" class="btn btn-primary">Ask InsightAI</button>
+            </div>
+
+            <div id="qaResponseCard" class="qa-response-card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-cyan); font-weight: 700;">Grounded Answer</span>
+                <span id="qaConfidenceBadge" class="chip chip-emerald" style="font-size: 0.7rem;">94% Confidence</span>
+              </div>
+              <div id="qaAnswerText" class="qa-answer"></div>
+              <div id="qaCitationsList"></div>
+            </div>
+          </div>
+
+          <!-- Executive Summary -->
+          <div class="glass-card">
+            <div class="card-header">
+              <div class="card-title">Executive Synopsis</div>
+              <span id="docReadingTime" class="chip chip-primary">~2 min read</span>
+            </div>
+            <p id="docSynopsis" style="font-size: 1.05rem; line-height: 1.7; color: var(--text-primary);"></p>
+          </div>
+
+          <!-- Key Takeaways & Action Items -->
+          <div class="charts-grid">
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title">Key Strategic Takeaways</div>
+              </div>
+              <ul id="docTakeawaysList" style="padding-left: 1.25rem; font-size: 0.9rem; color: var(--text-secondary);"></ul>
+            </div>
+
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title">Immediate Action Items & Milestones</div>
+              </div>
+              <ul id="docActionItemsList" style="list-style: none; font-size: 0.9rem;"></ul>
+            </div>
+          </div>
+
+          <!-- Quantitative Metrics & Entities -->
+          <div class="charts-grid">
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title">Extracted Metrics & Financials</div>
+              </div>
+              <div id="docMetricsBadges" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem;"></div>
+            </div>
+
+            <div class="glass-card">
+              <div class="card-header">
+                <div class="card-title">Named Entities (NER)</div>
+              </div>
+              <div id="docNerChips" class="chip-group"></div>
+            </div>
+          </div>
+
+          <!-- Readability & Sentiment -->
+          <div class="glass-card">
+            <div class="card-header">
+              <div class="card-title">Document Tone & Readability Index</div>
+            </div>
+            <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Sentiment & Tone</div>
+                <div id="docSentimentLabel" style="font-size: 1.15rem; font-weight: 700; color: var(--accent-emerald);">-</div>
+              </div>
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Readability Standard</div>
+                <div id="docReadabilityScore" style="font-size: 1.15rem; font-weight: 700; color: var(--accent-cyan);">-</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 5: REST API Explorer & Console -->
+        <section id="tab-api" class="tab-pane">
+          <div class="view-header">
+            <div class="view-title-group">
+              <h1>REST API Explorer & Developer Console</h1>
+              <p class="view-description">Directly test InsightAI RESTful endpoints, inspect payloads, and copy production curl snippets.</p>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="card-header">
+              <div class="card-title">API Request Tester</div>
+              <span id="apiLatencyBadge" class="chip chip-emerald">Ready</span>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
+              <select id="apiEndpointSelect" class="input-text" style="max-width: 320px;">
+                <option value="health">GET /api/health</option>
+                <option value="docs">GET /api/docs</option>
+                <option value="analyzeDoc">POST /api/analyze/document</option>
+                <option value="analyzeData">POST /api/analyze/data</option>
+                <option value="analyzeResume">POST /api/analyze/resume</option>
+                <option value="query">POST /api/query</option>
+              </select>
+              <button id="btnRunApi" class="btn btn-primary">Run Request</button>
+            </div>
+
+            <div style="margin-bottom: 0.5rem; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">JSON Request Body</div>
+            <textarea id="apiRequestBody" class="input-text" rows="4" style="width: 100%; font-family: var(--font-mono); font-size: 0.8rem;"></textarea>
+
+            <div style="margin-top: 1rem; margin-bottom: 0.5rem; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">cURL Command Equivalent</div>
+            <pre id="apiCurlCode" class="code-box"></pre>
+
+            <div style="margin-top: 1rem; margin-bottom: 0.5rem; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Live Server Response</div>
+            <pre id="apiResponseBody" class="code-box" style="max-height: 250px;">Click "Run Request" to test endpoint live...</pre>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Loading Animation Overlay -->
+  <div id="loaderOverlay" class="loader-overlay">
+    <div class="spinner"></div>
+    <div id="loaderText" class="loader-text">Analyzing Document...</div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/charts.js"></script>
+  <script src="/js/samples.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

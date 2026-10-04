@@ -1,0 +1,33 @@
+{
+  "name": "insightai",
+  "version": "1.0.0",
+  "description": "AI-Powered Multi-Format Document Intelligence & Analytics Platform",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js",
+    "push": "node scripts/push-to-github.js"
+  },
+  "keywords": [
+    "ai",
+    "nlp",
+    "document-intelligence",
+    "excel-parser",
+    "pdf-analyzer",
+    "resume-screening",
+    "ats-scoring",
+    "dashboard",
+    "rest-api"
+  ],
+  "author": "Prasanna Raj <prasannaraj2k5@github.com>",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "isomorphic-git": "^1.27.0",
+    "mammoth": "^1.8.0",
+    "multer": "^1.4.5-lts.1",
+    "pdf-parse": "^1.1.1",
+    "xlsx": "^0.18.5"
+  }
+}

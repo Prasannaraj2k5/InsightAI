@@ -1,0 +1,49 @@
+PRASANNA RAJ
+Senior AI & Full-Stack Platform Engineer
+Email: prasanna.raj@example.com | Phone: +1 (555) 234-5678
+Location: San Francisco, CA | LinkedIn: linkedin.com/in/prasanna-raj | GitHub: github.com/Prasannaraj2k5
+
+SUMMARY
+Accomplished Full-Stack & Machine Learning Software Engineer with 6+ years of experience architecting high-throughput document intelligence systems, multi-modal LLM applications, and scalable RESTful APIs. Expertise in Python, TypeScript, Node.js, React, PyTorch, and cloud infrastructure (AWS/GCP). Proven track record of reducing document processing latency by 65% and improving ATS candidate matching precision to 94%.
+
+CORE TECHNICAL SKILLS
+• Programming Languages: Python, JavaScript, TypeScript, SQL, Java, C++, Go
+• AI / Machine Learning & NLP: LLMs (GPT-4, Gemini, Claude), LangChain, LlamaIndex, PyTorch, Transformers, HuggingFace, SpaCy, Scikit-Learn, Vector Databases (Pinecone, ChromaDB, Weaviate), RAG, Prompt Engineering
+• Full-Stack & Web Frameworks: React, Next.js, Node.js, Express, FastAPI, Flask, TailwindCSS, HTML5, CSS3, GraphQL
+• Cloud & DevOps: AWS (Lambda, ECS, S3, RDS), Google Cloud Platform (BigQuery, Cloud Run, Vertex AI), Docker, Kubernetes, CI/CD Pipelines, GitHub Actions, Terraform
+• Databases: PostgreSQL, MongoDB, Redis, BigQuery, MySQL, Elasticsearch
+• Methodologies & Soft Skills: Agile/Scrum, System Architecture, Cross-functional Leadership, Technical Mentorship, High-Performance Systems
+
+PROFESSIONAL EXPERIENCE
+
+Lead AI Solutions Architect | Nexus Intelligence Labs
+July 2024 - Present | San Francisco, CA
+• Designed and spearheaded the development of an enterprise multi-format document parser extracting structured KPIs from Excel, PDF, and DOCX files at 10,000+ files per hour.
+• Implemented advanced NLP information extraction pipelines utilizing transformer embeddings and NER algorithms, achieving a 98.4% field accuracy rate on legal and financial documents.
+• Spearheaded the deployment of scalable microservices using Docker, Kubernetes, and FastAPI, maintaining 99.99% uptime SLA across 40+ enterprise clients.
+• Mentored 8 junior and mid-level engineers in distributed systems design, clean code practices, and modern asynchronous architecture.
+
+Senior Full-Stack Engineer | DataVertex Cloud Inc.
+January 2022 - June 2024 | Seattle, WA
+• Built high-performance REST APIs in Node.js and Express processing 15M+ daily requests with sub-50ms latency.
+• Engineered an interactive real-time analytics dashboard with React, TypeScript, and Chart.js, rendering multi-series visual distributions and time-series trends without UI jank.
+• Automated resume screening and ATS ranking pipelines with custom NLP tokenizers and semantic similarity scoring, reducing candidate shortlisting turnaround from 4 days to 15 minutes.
+• Optimized PostgreSQL query performance and indexed critical tables, resulting in a 4x throughput boost.
+
+Software Engineer | AlphaStream Technologies
+August 2020 - December 2021 | Austin, TX
+• Developed automated data ingestion pipelines for large Excel and CSV spreadsheets using Node.js and Python.
+• Built reusable UI component libraries and responsive web applications with modern CSS and JavaScript.
+• Integrated OAuth2 authentication and role-based access control (RBAC) ensuring SOC-2 compliance.
+
+EDUCATION
+Master of Science in Computer Science (Artificial Intelligence Specialization)
+Stanford University, 2020 | GPA: 3.92/4.0
+
+Bachelor of Technology in Computer Science & Engineering
+Anna University, 2018 | First Class with Distinction
+
+CERTIFICATIONS & HONORS
+• AWS Certified Solutions Architect - Professional (2024)
+• Google Cloud Professional Machine Learning Engineer (2023)
+• Winner, Global AI Hackathon (Enterprise Document Understanding Track, 2023)

@@ -1,0 +1,25 @@
+Month,Department,Region,Revenue_USD,Operating_Cost_USD,Headcount,Customer_Satisfaction_Score,Project_Completion_Rate
+2026-01,AI Engineering,North America,1250000,720000,42,4.8,94.2
+2026-01,Cloud Solutions,Europe,980000,610000,35,4.6,89.5
+2026-01,Data Analytics,Asia-Pacific,750000,430000,28,4.7,91.0
+2026-01,Cybersecurity,North America,890000,510000,24,4.9,96.5
+2026-02,AI Engineering,North America,1380000,740000,44,4.8,95.0
+2026-02,Cloud Solutions,Europe,1050000,620000,36,4.7,92.1
+2026-02,Data Analytics,Asia-Pacific,820000,440000,30,4.8,93.4
+2026-02,Cybersecurity,North America,920000,520000,25,4.9,97.0
+2026-03,AI Engineering,North America,1520000,790000,48,4.9,96.8
+2026-03,Cloud Solutions,Europe,1180000,650000,38,4.7,93.0
+2026-03,Data Analytics,Asia-Pacific,910000,460000,32,4.8,94.5
+2026-03,Cybersecurity,North America,980000,540000,26,4.9,98.2
+2026-04,AI Engineering,North America,1650000,830000,52,4.9,97.5
+2026-04,Cloud Solutions,Europe,1240000,670000,40,4.8,94.0
+2026-04,Data Analytics,Asia-Pacific,990000,480000,34,4.9,95.2
+2026-04,Cybersecurity,North America,1050000,560000,28,5.0,99.0
+2026-05,AI Engineering,North America,1780000,870000,56,4.9,98.0
+2026-05,Cloud Solutions,Europe,1310000,690000,42,4.8,94.8
+2026-05,Data Analytics,Asia-Pacific,1080000,510000,36,4.9,96.0
+2026-05,Cybersecurity,North America,1120000,580000,30,5.0,99.2
+2026-06,AI Engineering,North America,1920000,910000,60,5.0,98.5
+2026-06,Cloud Solutions,Europe,1400000,720000,45,4.9,95.5
+2026-06,Data Analytics,Asia-Pacific,1150000,530000,38,4.9,96.8
+2026-06,Cybersecurity,North America,1190000,590000,31,5.0,99.5
