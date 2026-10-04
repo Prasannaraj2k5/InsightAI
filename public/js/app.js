@@ -1231,6 +1231,264 @@ Early termination fee shall accelerate all remaining payments.`;
     }, 3500);
   }
 
+  // =========================================================================
+  // JD ↔ RESUME MATCHER CONTROLLER
+  // =========================================================================
+  const btnRunJdMatch = document.getElementById('btnRunJdMatch');
+  const btnJdMatchSampleLoad = document.getElementById('btnJdMatchSampleLoad');
+  const jdMatchJDInput = document.getElementById('jdMatchJDInput');
+  const jdMatchResumeInput = document.getElementById('jdMatchResumeInput');
+  const jdMatchResults = document.getElementById('jdMatchResults');
+
+  if (btnJdMatchSampleLoad) {
+    btnJdMatchSampleLoad.addEventListener('click', () => {
+      if (jdMatchJDInput) {
+        jdMatchJDInput.value = `Senior Full-Stack AI Engineer
+We are seeking an experienced Senior Software Engineer (5+ years) to design, build, and deploy production-grade AI-powered applications.
+
+Key Responsibilities:
+- Architect and develop scalable web services using Python, FastAPI, and TypeScript with React.
+- Design resilient cloud architectures on AWS utilizing Docker, Kubernetes, and PostgreSQL.
+- Build vector search and RAG pipelines integrating LLMs, LangChain, Pinecone, and OpenAI APIs.
+- Implement robust CI/CD pipelines, automated testing, and MLOps monitoring.
+- Collaborate cross-functionally with product managers and ML researchers in an Agile environment.
+
+Requirements:
+- 5+ years software engineering experience with strong proficiency in Python, React, and TypeScript.
+- Hands-on experience with Docker, Kubernetes, AWS, PostgreSQL, and Redis.
+- Knowledge of Machine Learning, LLMs, NLP, LangChain, or vector databases is a huge plus.
+- Proven track record with REST APIs, Git, Unit Testing, and microservices architecture.`;
+      }
+      if (jdMatchResumeInput) {
+        jdMatchResumeInput.value = `Sarah Chen — Senior Software Engineer
+San Francisco, CA | sarah.chen@example.com | 6+ Years Experience
+
+Summary:
+Versatile Senior Software Engineer with 6 years of experience building high-scale web platforms and cloud-native services. Proven expertise in full-stack architecture, microservices, and distributed databases. Passionate about applying AI/ML techniques to solve complex business problems.
+
+Core Technical Skills:
+- Languages: Python, JavaScript, TypeScript, SQL, Bash
+- Frameworks & Web: React, Next.js, Node.js, Express, Flask, Tailwind CSS
+- Databases & Caching: PostgreSQL, MongoDB, Redis, MySQL
+- Cloud & DevOps: Docker, Linux, CI/CD, Git, Microservices, GitHub Actions
+- Concepts: REST APIs, System Design, Agile/Scrum, Unit Testing, A/B Testing
+
+Professional Experience:
+Senior Software Engineer | CloudScale Tech (2021 – Present)
+- Architected and shipped 4 core microservices in Node.js and Python handling 15M+ daily requests.
+- Modernized the frontend using React and TypeScript, boosting Core Web Vitals score by 42%.
+- Designed PostgreSQL schema migrations and optimized Redis caching, cutting P99 latency by 35%.
+- Implemented CI/CD workflows with GitHub Actions and Docker, reducing release cycles from 2 weeks to 2 days.
+- Mentored 4 junior engineers on code reviews, TDD, and clean architecture practices.
+
+Software Engineer | Apex Systems (2018 – 2021)
+- Developed responsive web interfaces using React and REST APIs with Python/Flask backend.
+- Managed relational database schemas in PostgreSQL and automated ETL scripts.`;
+      }
+      showToast('Loaded realistic JD and candidate resume sample!', 'info');
+    });
+  }
+
+  if (btnRunJdMatch) {
+    btnRunJdMatch.addEventListener('click', async () => {
+      const jobDescription = (jdMatchJDInput ? jdMatchJDInput.value : '').trim();
+      const resumeText = (jdMatchResumeInput ? jdMatchResumeInput.value : '').trim();
+
+      if (!jobDescription || !resumeText) {
+        showToast('Please enter both Job Description and Resume text to compare.', 'error');
+        return;
+      }
+
+      showLoader('Analyzing JD ↔ Resume match & computing skill gaps...');
+
+      try {
+        const res = await fetch('/api/match/jd-resume', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jobDescription, resumeText })
+        });
+
+        const data = await res.json();
+        hideLoader();
+
+        if (!res.ok || !data.success) {
+          showToast(data.error || 'Failed to analyze JD and resume.', 'error');
+          return;
+        }
+
+        renderJdMatchResults(data);
+        showToast(`Match score: ${data.overallScore}% (${data.grade})`, 'success');
+      } catch (err) {
+        hideLoader();
+        console.error('JD Match Error:', err);
+        showToast('Network error while matching JD and resume.', 'error');
+      }
+    });
+  }
+
+  function renderJdMatchResults(data) {
+    if (!jdMatchResults) return;
+    jdMatchResults.style.display = 'block';
+
+    // 1. Overall Score Ring & Grade
+    const ring = document.getElementById('jdMatchScoreRing');
+    const scoreNum = document.getElementById('jdMatchScoreNum');
+    const grade = document.getElementById('jdMatchGrade');
+    const recommendation = document.getElementById('jdMatchRecommendation');
+    const statsLine = document.getElementById('jdMatchStatsLine');
+
+    if (ring) ring.style.setProperty('--pct', `${data.overallScore}%`);
+    if (scoreNum) scoreNum.textContent = data.overallScore;
+
+    const gradeColors = {
+      emerald: 'var(--accent-emerald)',
+      cyan: 'var(--accent-cyan)',
+      amber: 'var(--accent-amber)',
+      rose: 'var(--accent-rose)'
+    };
+    if (grade) {
+      grade.textContent = `Grade ${data.grade}`;
+      grade.style.color = gradeColors[data.gradeColor] || 'var(--accent-emerald)';
+    }
+    if (recommendation) {
+      recommendation.textContent = data.recommendation;
+      recommendation.style.color = gradeColors[data.gradeColor] || 'var(--text-primary)';
+    }
+    if (statsLine) {
+      statsLine.textContent = `${data.stats.matchedCount} of ${data.stats.jdSkillsTotal} required JD skills found • ${data.stats.capCount} skill gaps identified • ${data.stats.bonusCount} bonus candidate skills`;
+    }
+
+    // 2. Breakdown Bars
+    const breakdownEl = document.getElementById('jdMatchBreakdownBars');
+    if (breakdownEl && data.breakdown) {
+      breakdownEl.innerHTML = Object.entries(data.breakdown).map(([k, item]) => `
+        <div class="ats-row">
+          <div class="flex items-center justify-between text-xs" style="margin-bottom:0.25rem;">
+            <span class="font-medium">${item.label}</span>
+            <span class="font-mono text-secondary">${item.score}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill ${item.score >= 75 ? 'fill-emerald' : item.score >= 50 ? 'fill-cyan' : 'fill-amber'}" style="width:${item.score}%"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 3. Matched Skills
+    const matchedEl = document.getElementById('jdMatchedSkillsList');
+    const matchedCountEl = document.getElementById('jdMatchedCount');
+    if (matchedCountEl) matchedCountEl.textContent = data.stats.matchedCount;
+    if (matchedEl) {
+      if (data.matchedSkills.length === 0) {
+        matchedEl.innerHTML = '<span class="text-xs text-muted">No explicit keyword matches found.</span>';
+      } else {
+        matchedEl.innerHTML = data.matchedSkills.map(s => `
+          <span class="chip" style="background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3);color:var(--accent-emerald);">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+            ${s}
+          </span>
+        `).join('');
+      }
+    }
+
+    // 4. Cap / Gap Skills
+    const capEl = document.getElementById('jdCapSkillsList');
+    const capCountEl = document.getElementById('jdCapCount');
+    if (capCountEl) capCountEl.textContent = data.stats.capCount;
+    if (capEl) {
+      if (data.capSkills.length === 0) {
+        capEl.innerHTML = '<span class="text-xs text-secondary">🎉 Zero skill gaps detected! Candidate meets all extracted requirements.</span>';
+      } else {
+        capEl.innerHTML = data.capSkills.map(c => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:0.5rem 0.75rem;background:var(--bg-surface);border-radius:var(--radius-sm);border:1px solid rgba(244,63,94,0.15);">
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+              <span class="badge ${c.priority === 'HIGH' ? 'badge-danger' : 'badge-warning'}" style="font-size:0.65rem;">${c.priority}</span>
+              <span style="font-weight:600;font-size:0.88rem;color:var(--text-primary);text-transform:capitalize;">${c.skill}</span>
+              <span class="text-xs text-muted">(${c.category})</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <span class="text-xs text-secondary">⏱️ ${c.estimatedLearnTime}</span>
+              <a href="${c.learnUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" style="padding:0.2rem 0.55rem;font-size:0.72rem;display:inline-flex;align-items:center;gap:4px;">
+                Learn
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    // 5. Bonus Skills
+    const bonusEl = document.getElementById('jdBonusSkillsList');
+    const bonusCountEl = document.getElementById('jdBonusCount');
+    if (bonusCountEl) bonusCountEl.textContent = data.stats.bonusCount;
+    if (bonusEl) {
+      if (data.bonusSkills.length === 0) {
+        bonusEl.innerHTML = '<span class="text-xs text-muted">No additional out-of-scope skills identified.</span>';
+      } else {
+        bonusEl.innerHTML = data.bonusSkills.map(s => `
+          <span class="chip" style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.25);color:var(--accent-amber);">
+            + ${s}
+          </span>
+        `).join('');
+      }
+    }
+
+    // 6. Category Breakdown
+    const catEl = document.getElementById('jdCategoryBreakdown');
+    if (catEl && data.categoryScores) {
+      const activeCats = Object.entries(data.categoryScores).filter(([_, v]) => v.required > 0);
+      if (activeCats.length === 0) {
+        catEl.innerHTML = '<span class="text-xs text-muted">No standard categories matched in this JD.</span>';
+      } else {
+        catEl.innerHTML = activeCats.map(([cat, info]) => `
+          <div style="background:var(--bg-surface);padding:0.75rem;border-radius:var(--radius-sm);border:1px solid var(--border-subtle);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.35rem;">
+              <span style="font-weight:600;font-size:0.85rem;">${cat}</span>
+              <span class="badge ${info.score >= 80 ? 'badge-success' : info.score >= 50 ? 'badge-warning' : 'badge-danger'}" style="font-size:0.7rem;">
+                ${info.found} / ${info.required} (${info.score}%)
+              </span>
+            </div>
+            <div class="progress-bar" style="height:6px;margin-bottom:0.5rem;">
+              <div class="progress-fill ${info.score >= 80 ? 'fill-emerald' : info.score >= 50 ? 'fill-cyan' : 'fill-rose'}" style="width:${info.score}%"></div>
+            </div>
+            <div class="text-xs" style="display:flex;flex-wrap:wrap;gap:0.4rem;align-items:center;">
+              ${info.matched.length > 0 ? `<span class="text-secondary">Have:</span> ${info.matched.map(m => `<span style="color:var(--accent-emerald);font-weight:600;">✓ ${m}</span>`).join(', ')}` : ''}
+              ${info.missing.length > 0 ? `<span class="text-secondary" style="margin-left:8px;">Missing:</span> ${info.missing.map(m => `<span style="color:var(--accent-rose);font-weight:500;">✗ ${m}</span>`).join(', ')}` : ''}
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    // 7. Auto Interview Questions
+    const qEl = document.getElementById('jdInterviewQList');
+    if (qEl && data.interviewQuestions) {
+      qEl.innerHTML = data.interviewQuestions.map((iq, i) => `
+        <div style="background:var(--bg-surface);padding:0.75rem;border-radius:var(--radius-sm);border-left:3px solid var(--accent-cyan);">
+          <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.25rem;">
+            <span class="badge badge-cyan" style="font-size:0.65rem;">${iq.type}</span>
+            <span class="text-xs text-muted">Q${i + 1}</span>
+          </div>
+          <p style="font-size:0.85rem;margin:0;line-height:1.45;color:var(--text-primary);">${iq.question}</p>
+        </div>
+      `).join('');
+    }
+
+    // 8. Personalized Tips
+    const tipsEl = document.getElementById('jdTipsList');
+    if (tipsEl && data.personalizedTips) {
+      tipsEl.innerHTML = data.personalizedTips.map(tip => `
+        <div style="background:var(--bg-surface);padding:0.75rem;border-radius:var(--radius-sm);border-left:3px solid var(--accent-indigo, #6366f1);font-size:0.85rem;line-height:1.45;">
+          ${tip.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+        </div>
+      `).join('');
+    }
+
+    // Smooth scroll into view
+    jdMatchResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
   // Expose toast globally for inline onclick handlers
   window.showToast = showToast;
 });

@@ -96,6 +96,11 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
               Document Q&amp;A
             </li>
+            <li class="nav-item" data-tab="tab-jdmatch" role="listitem" tabindex="0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              JD ↔ Resume Matcher
+              <span class="nav-badge" style="background:var(--grad-emerald);">New</span>
+            </li>
             <li class="nav-item" data-tab="tab-history" role="listitem" tabindex="0">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
               Recent Documents
@@ -619,7 +624,165 @@
         </section>
 
         <!-- ════════════════════════════════════════════════
-             TAB 5: RECENT DOCUMENTS
+             TAB 5: JD ↔ RESUME MATCHER
+        ════════════════════════════════════════════════ -->
+        <section id="tab-jdmatch" class="tab-pane" aria-labelledby="tab-jdmatch-label">
+          <div class="page-header">
+            <div class="page-title">
+              <h1 id="tab-jdmatch-label">JD ↔ Resume Match Analyzer</h1>
+              <p>Paste any Job Description and Resume text to get a detailed skill match score, skill gap (cap) analysis, learning roadmap, and auto-generated interview questions.</p>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-primary" id="btnRunJdMatch" aria-label="Run JD vs Resume analysis">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                Analyze Match
+              </button>
+              <button class="btn btn-secondary btn-sm" id="btnJdMatchSampleLoad" aria-label="Load sample JD and resume">
+                Load Sample
+              </button>
+            </div>
+          </div>
+
+          <!-- Input Panels -->
+          <div class="charts-grid mb-lg">
+            <div class="card">
+              <div class="card-head">
+                <div class="card-title">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                  Job Description (JD)
+                  <span class="badge badge-info" style="font-size:0.68rem;">Target Role</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <textarea id="jdMatchJDInput" class="input" rows="10" placeholder="Paste the full job description here...
+
+Example:
+We are looking for a Senior Full-Stack Engineer with 5+ years experience in Python, React, Node.js, AWS, Docker, PostgreSQL, and REST API design. Experience with CI/CD, Kubernetes, and Agile methodologies preferred..." aria-label="Job description input"></textarea>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div class="card-title">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>
+                  Resume / Candidate Profile
+                  <span class="badge badge-success" style="font-size:0.68rem;">Candidate</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <textarea id="jdMatchResumeInput" class="input" rows="10" placeholder="Paste the candidate's resume text here...
+
+Example:
+Sarah Chen — Senior Software Engineer
+Python, JavaScript, React, Node.js, Docker, AWS, PostgreSQL, Redis, Git, Agile, REST APIs
+8 years experience building scalable web platforms and microservices..." aria-label="Resume input"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── RESULTS (hidden until analyzed) ── -->
+          <div id="jdMatchResults" style="display:none;">
+
+            <!-- Score Hero -->
+            <div class="card mb-lg card-featured">
+              <div class="card-body">
+                <div class="ats-hero">
+                  <!-- Score Ring -->
+                  <div style="text-align:center;flex-shrink:0;">
+                    <div class="score-ring" id="jdMatchScoreRing" style="--pct:0%" role="img" aria-label="Match score">
+                      <div class="score-inner">
+                        <span class="score-num" id="jdMatchScoreNum">0</span>
+                        <span class="score-den">/ 100</span>
+                      </div>
+                    </div>
+                    <div style="font-weight:800;font-size:1rem;margin-top:0.6rem;" id="jdMatchGrade">—</div>
+                    <div class="text-xs text-muted mt-0.5">Overall JD Match</div>
+                  </div>
+
+                  <!-- Breakdown bars -->
+                  <div style="flex:1;min-width:220px;">
+                    <div style="font-size:1.25rem;font-weight:800;margin-bottom:0.25rem;" id="jdMatchRecommendation">Analyzing...</div>
+                    <div class="text-sm text-secondary mb-lg" id="jdMatchStatsLine">—</div>
+                    <div class="ats-scores" id="jdMatchBreakdownBars"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Skill columns -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-bottom:1rem;">
+
+              <!-- Matched Skills -->
+              <div class="card">
+                <div class="card-head">
+                  <div class="card-title" style="color:var(--accent-emerald);">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    Matched Skills
+                    <span class="badge badge-success" id="jdMatchedCount">0</span>
+                  </div>
+                </div>
+                <div class="card-body chip-row flex-wrap" id="jdMatchedSkillsList" aria-label="Matched skills"></div>
+              </div>
+
+              <!-- Cap / Gap Skills -->
+              <div class="card" style="border-color:rgba(244,63,94,0.2);">
+                <div class="card-head">
+                  <div class="card-title" style="color:var(--accent-rose);">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Skill Gaps (Cap Skills)
+                    <span class="badge badge-danger" id="jdCapCount">0</span>
+                  </div>
+                </div>
+                <div class="card-body" id="jdCapSkillsList" style="display:flex;flex-direction:column;gap:0.55rem;" aria-label="Skill gaps"></div>
+              </div>
+
+              <!-- Bonus Skills -->
+              <div class="card" style="border-color:rgba(245,158,11,0.2);">
+                <div class="card-head">
+                  <div class="card-title" style="color:var(--accent-amber);">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    Bonus / Extra Skills
+                    <span class="badge badge-warning" id="jdBonusCount">0</span>
+                  </div>
+                </div>
+                <div class="card-body chip-row flex-wrap" id="jdBonusSkillsList" aria-label="Bonus skills"></div>
+              </div>
+            </div>
+
+            <!-- Category Breakdown -->
+            <div class="card mb-lg">
+              <div class="card-head"><div class="card-title">Category-Level Match Breakdown</div></div>
+              <div class="card-body" id="jdCategoryBreakdown" style="display:flex;flex-direction:column;gap:0.75rem;"></div>
+            </div>
+
+            <!-- Interview Questions + Tips -->
+            <div class="charts-grid mb-lg">
+              <div class="card">
+                <div class="card-head">
+                  <div class="card-title" style="color:var(--accent-cyan);">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Auto-Generated Interview Questions
+                  </div>
+                </div>
+                <div class="card-body" id="jdInterviewQList" style="display:flex;flex-direction:column;gap:0.75rem;"></div>
+              </div>
+
+              <div class="card" style="border-color:rgba(99,102,241,0.2);">
+                <div class="card-head">
+                  <div class="card-title" style="color:#a5b4fc;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    Personalized Recommendations
+                  </div>
+                </div>
+                <div class="card-body" id="jdTipsList" style="display:flex;flex-direction:column;gap:0.75rem;"></div>
+              </div>
+            </div>
+
+          </div><!-- /#jdMatchResults -->
+        </section>
+
+        <!-- ════════════════════════════════════════════════
+             TAB 6: RECENT DOCUMENTS
         ════════════════════════════════════════════════ -->
         <section id="tab-history" class="tab-pane" aria-labelledby="tab-history-label">
           <div class="page-header">

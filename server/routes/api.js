@@ -643,6 +643,233 @@ router.get('/share/:id', (req, res) => {
 });
 
 /**
+ * JD ↔ Resume Matcher — Deep Match Analysis
+ * POST /api/match/jd-resume
+ * Body: { resumeText, jobDescription }
+ */
+router.post('/match/jd-resume', (req, res) => {
+  const { resumeText, jobDescription } = req.body;
+
+  if (!resumeText || !jobDescription) {
+    return res.status(400).json({ error: 'Both resumeText and jobDescription are required.' });
+  }
+
+  const resumeLower = resumeText.toLowerCase();
+  const jdLower = jobDescription.toLowerCase();
+
+  // ── 1. SKILL TAXONOMY ─────────────────────────────────────────────────
+  const TAXONOMY = {
+    'Programming Languages': [
+      'python','javascript','typescript','java','c++','c#','go','golang','rust','ruby',
+      'php','swift','kotlin','r','scala','bash','shell','sql','dart','matlab'
+    ],
+    'Frameworks & Libraries': [
+      'react','next.js','vue','angular','node.js','express','fastapi','flask','django',
+      'spring boot','pytorch','tensorflow','keras','langchain','scikit-learn','pandas',
+      'numpy','tailwind','graphql','nestjs','svelte','fastify','huggingface'
+    ],
+    'Cloud & DevOps': [
+      'aws','gcp','google cloud','azure','docker','kubernetes','k8s','ci/cd',
+      'github actions','terraform','ansible','helm','linux','serverless','lambda',
+      'cloud run','microservices','jenkins','gitlab ci','datadog','prometheus'
+    ],
+    'Databases & Storage': [
+      'postgresql','mysql','mongodb','redis','bigquery','snowflake','dynamodb',
+      'cassandra','elasticsearch','pinecone','chromadb','sqlite','neo4j','firebase',
+      'supabase','cockroachdb','clickhouse'
+    ],
+    'AI / ML & Data Science': [
+      'nlp','llm','machine learning','deep learning','rag','computer vision',
+      'vector database','prompt engineering','mlops','transformers','embeddings',
+      'fine-tuning','openai','langchain','stable diffusion','data science',
+      'feature engineering','xgboost','a/b testing','statistics'
+    ],
+    'Tools & Practices': [
+      'git','agile','scrum','jira','figma','rest api','graphql','grpc','swagger',
+      'postman','unit testing','tdd','bdd','oauth','jwt','websocket','kafka',
+      'rabbitmq','celery','airflow','dbt'
+    ],
+    'Soft Skills & Leadership': [
+      'leadership','mentorship','communication','collaboration','problem solving',
+      'project management','cross-functional','product thinking','system design',
+      'architecture','stakeholder management','presentation','documentation'
+    ]
+  };
+
+  // Skill learning resources map
+  const LEARN_RESOURCES = {
+    'python': 'https://docs.python.org/3/tutorial/', 'react': 'https://react.dev/learn',
+    'aws': 'https://aws.amazon.com/training/', 'docker': 'https://docs.docker.com/get-started/',
+    'kubernetes': 'https://kubernetes.io/docs/tutorials/', 'machine learning': 'https://www.coursera.org/learn/machine-learning',
+    'pytorch': 'https://pytorch.org/tutorials/', 'typescript': 'https://www.typescriptlang.org/docs/',
+    'node.js': 'https://nodejs.org/en/learn/getting-started/introduction-to-nodejs',
+    'postgresql': 'https://www.postgresql.org/docs/current/tutorial.html',
+    'mongodb': 'https://learn.mongodb.com/', 'fastapi': 'https://fastapi.tiangolo.com/tutorial/',
+    'terraform': 'https://developer.hashicorp.com/terraform/tutorials',
+    'kafka': 'https://kafka.apache.org/quickstart', 'redis': 'https://redis.io/learn',
+    'sql': 'https://www.w3schools.com/sql/', 'graphql': 'https://graphql.org/learn/',
+    'nlp': 'https://huggingface.co/learn/nlp-course/', 'llm': 'https://www.deeplearning.ai/courses/',
+    'golang': 'https://go.dev/tour/', 'rust': 'https://doc.rust-lang.org/book/',
+    'gcp': 'https://cloud.google.com/training', 'azure': 'https://learn.microsoft.com/azure',
+    'mlops': 'https://ml-ops.org/', 'system design': 'https://github.com/donnemartin/system-design-primer'
+  };
+
+  // ── 2. EXTRACT SKILLS FROM JD AND RESUME ─────────────────────────────
+  const jdSkills = {};
+  const resumeSkills = {};
+  const allJdSkillsList = [];
+  const allResumeSkillsList = [];
+
+  for (const [cat, skills] of Object.entries(TAXONOMY)) {
+    jdSkills[cat] = [];
+    resumeSkills[cat] = [];
+
+    for (const skill of skills) {
+      const regex = new RegExp(`\\b${skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+      if (regex.test(jdLower)) {
+        jdSkills[cat].push(skill);
+        allJdSkillsList.push(skill);
+      }
+      if (regex.test(resumeLower)) {
+        resumeSkills[cat].push(skill);
+        allResumeSkillsList.push(skill);
+      }
+    }
+  }
+
+  // ── 3. MATCH / GAP / EXTRA ANALYSIS ──────────────────────────────────
+  const jdSet = new Set(allJdSkillsList.map(s => s.toLowerCase()));
+  const resumeSet = new Set(allResumeSkillsList.map(s => s.toLowerCase()));
+
+  const matchedSkills = allJdSkillsList.filter(s => resumeSet.has(s.toLowerCase()));
+  const capSkills = allJdSkillsList.filter(s => !resumeSet.has(s.toLowerCase())); // JD requires but resume lacks
+  const bonusSkills = allResumeSkillsList.filter(s => !jdSet.has(s.toLowerCase())); // Resume has but JD didn't ask
+
+  // ── 4. CATEGORY-LEVEL SCORES ──────────────────────────────────────────
+  const categoryScores = {};
+  for (const cat of Object.keys(TAXONOMY)) {
+    const required = jdSkills[cat].length;
+    const found = jdSkills[cat].filter(s => resumeSet.has(s.toLowerCase())).length;
+    categoryScores[cat] = {
+      required,
+      found,
+      score: required > 0 ? Math.round((found / required) * 100) : null,
+      matched: jdSkills[cat].filter(s => resumeSet.has(s.toLowerCase())),
+      missing: jdSkills[cat].filter(s => !resumeSet.has(s.toLowerCase()))
+    };
+  }
+
+  // ── 5. OVERALL MATCH SCORE ────────────────────────────────────────────
+  const skillMatchRatio = allJdSkillsList.length > 0 ? matchedSkills.length / allJdSkillsList.length : 0;
+  const skillMatchPct = Math.round(skillMatchRatio * 100);
+
+  // Keyword density match (non-skill terms)
+  const jdWords = [...new Set(jdLower.match(/\b[a-z]{4,}\b/g) || [])];
+  const resumeWords = new Set(resumeLower.match(/\b[a-z]{4,}\b/g) || []);
+  const sharedWords = jdWords.filter(w => resumeWords.has(w)).length;
+  const keywordDensity = Math.round((sharedWords / Math.max(jdWords.length, 1)) * 100);
+
+  // Experience level detected
+  const jdSeniorityMatch = jdLower.match(/senior|lead|principal|staff|architect|head of|vp|director/i);
+  const resumeSeniorityMatch = resumeLower.match(/senior|lead|principal|staff|architect|head of|vp|director/i);
+  const seniorityAlignment = (!jdSeniorityMatch || resumeSeniorityMatch) ? 100 : 55;
+
+  // Years of experience
+  const jdYearsMatch = jobDescription.match(/(\d+)\+?\s*years/i);
+  const resumeYearsMatch = resumeText.match(/(\d+)\+?\s*years/i);
+  const jdYears = jdYearsMatch ? parseInt(jdYearsMatch[1]) : 0;
+  const resumeYears = resumeYearsMatch ? parseInt(resumeYearsMatch[1]) : 0;
+  const expScore = jdYears > 0 ? Math.min(100, Math.round((Math.min(resumeYears, jdYears * 2) / jdYears) * 100)) : 80;
+
+  // Final weighted score
+  const overallScore = Math.min(100, Math.round(
+    skillMatchPct * 0.50 +
+    keywordDensity * 0.20 +
+    seniorityAlignment * 0.15 +
+    expScore * 0.15
+  ));
+
+  // Grade
+  let grade, gradeColor, recommendation;
+  if (overallScore >= 90) { grade = 'A+'; gradeColor = 'emerald'; recommendation = 'Exceptional Match — Fast-Track to Technical Interview'; }
+  else if (overallScore >= 80) { grade = 'A'; gradeColor = 'emerald'; recommendation = 'Strong Match — Recommend for Interview Round'; }
+  else if (overallScore >= 70) { grade = 'B+'; gradeColor = 'cyan'; recommendation = 'Good Match — Minor skill gaps, consider screening call'; }
+  else if (overallScore >= 60) { grade = 'B'; gradeColor = 'cyan'; recommendation = 'Moderate Match — Bridge skill gaps before applying'; }
+  else if (overallScore >= 50) { grade = 'C+'; gradeColor = 'amber'; recommendation = 'Partial Match — Significant upskilling needed (4–6 months)'; }
+  else { grade = 'C'; gradeColor = 'rose'; recommendation = 'Low Match — Major skill gaps. Focus on core JD requirements first'; }
+
+  // ── 6. CAP SKILLS WITH LEARNING RESOURCES ────────────────────────────
+  const capSkillsEnriched = capSkills.slice(0, 15).map(skill => ({
+    skill,
+    priority: allJdSkillsList.indexOf(skill) < allJdSkillsList.length / 2 ? 'HIGH' : 'MEDIUM',
+    estimatedLearnTime: ['python','sql','react','node.js','docker'].includes(skill) ? '2–4 weeks' :
+      ['kubernetes','aws','pytorch','terraform'].includes(skill) ? '4–8 weeks' : '1–3 weeks',
+    learnUrl: LEARN_RESOURCES[skill] || `https://www.google.com/search?q=learn+${encodeURIComponent(skill)}+tutorial`,
+    category: Object.keys(TAXONOMY).find(cat => TAXONOMY[cat].includes(skill)) || 'General'
+  }));
+
+  // ── 7. AUTO-GENERATED INTERVIEW QUESTIONS ────────────────────────────
+  const interviewQuestions = [];
+  if (matchedSkills.length > 0) {
+    const pick = matchedSkills.slice(0, 3);
+    pick.forEach(s => {
+      interviewQuestions.push({
+        type: 'Technical',
+        question: `Describe a production scenario where you used ${s}. What challenges did you face and how did you resolve them?`
+      });
+    });
+  }
+  interviewQuestions.push(
+    { type: 'Behavioral', question: 'Tell me about a time you led a cross-functional project under tight deadlines. What was your approach?' },
+    { type: 'System Design', question: `Design a scalable system for ${jdLower.includes('api') ? 'a high-throughput REST API' : jdLower.includes('data') ? 'a real-time data pipeline' : 'a distributed microservices architecture'} — walk me through your choices.` },
+    { type: 'Culture Fit', question: 'How do you stay current with industry trends and continuously upskill?' }
+  );
+
+  // ── 8. PERSONALIZED RECOMMENDATIONS ──────────────────────────────────
+  const personalizedTips = [];
+  if (capSkills.length > 0) {
+    personalizedTips.push(`📚 Priority Learning: Focus on **${capSkills.slice(0,3).join(', ')}** — these appear prominently in the JD and are missing from your resume.`);
+  }
+  if (bonusSkills.length > 0) {
+    personalizedTips.push(`⭐ You have additional strengths (${bonusSkills.slice(0,4).join(', ')}) not listed in the JD — highlight these as differentiators.`);
+  }
+  if (skillMatchPct < 60) {
+    personalizedTips.push(`🎯 Your skill match is below 60%. Consider targeting mid-level roles in this domain before this specific role.`);
+  }
+  if (resumeYears > 0 && jdYears > 0 && resumeYears < jdYears) {
+    personalizedTips.push(`⏱️ The JD requests ${jdYears}+ years experience. Your resume shows ~${resumeYears} years. Highlight impact and complexity of projects to compensate.`);
+  }
+  personalizedTips.push(`✏️ Tailor your resume summary to include keywords: "${allJdSkillsList.slice(0,5).join(', ')}" — ATS scanners look for exact matches.`);
+
+  res.json({
+    success: true,
+    overallScore,
+    grade,
+    gradeColor,
+    recommendation,
+    breakdown: {
+      skillMatch: { score: skillMatchPct, label: 'Skill Match' },
+      keywordDensity: { score: keywordDensity, label: 'Keyword Density' },
+      seniorityAlignment: { score: seniorityAlignment, label: 'Seniority Alignment' },
+      experienceScore: { score: expScore, label: 'Experience Level' }
+    },
+    stats: {
+      jdSkillsTotal: allJdSkillsList.length,
+      resumeSkillsTotal: allResumeSkillsList.length,
+      matchedCount: matchedSkills.length,
+      capCount: capSkills.length,
+      bonusCount: bonusSkills.length
+    },
+    matchedSkills,
+    capSkills: capSkillsEnriched,
+    bonusSkills: bonusSkills.slice(0, 12),
+    categoryScores,
+    interviewQuestions,
+    personalizedTips
+  });
+});
+
+/**
  * Pre-bundled Realistic Sample Loader
  */
 router.get('/samples/:name', (req, res) => {
